@@ -11,13 +11,17 @@ public class SimulationController {
     List<Particle> particles = new ArrayList<>();
     FilePositionGenerator filePositionGenerator;
     int N;
-    int radius;
+    int circleRadius = 11;
     double velZ;
+    double velH = 4;
+    int countZombies = 1;
+    double deltaT;
+    double t = 0;
 
-    public SimulationController(int N, double velZ, FilePositionGenerator filePositionGenerator){
-        this.radius = 11;
+    public SimulationController(int N, double velZ, double deltaT, FilePositionGenerator filePositionGenerator){
         this.N = N;
         this.velZ = velZ;
+        this.deltaT = deltaT;
         this.filePositionGenerator = filePositionGenerator;
         generateMap();
         simulate();
@@ -25,31 +29,80 @@ public class SimulationController {
 
     public void generateMap(){
         double randomX, randomY;
-        //agrega las paredes
-        for(double j=0; j<360.0; j+=0.1){
-            particles.add(new Particle(11+radius*Math.cos(j), 11+radius*Math.sin(j), 0, 0, 1));
+
+        // agrega los humanos
+        while (particles.size() < N){
+            double randomAngle = Math.random()*(360);
+            double randomRadius = Math.random()*(circleRadius-1)+1;
+            randomX = circleRadius+randomRadius*Math.cos(randomAngle);
+            randomY = circleRadius+randomRadius*Math.sin(randomAngle);
+            if(!particleOverlaps(randomX, randomY)){
+                particles.add(new Particle(randomX , randomY, 0, 0.5, true, false));
+            }
         }
 
-        //agrega las particulas (humanos y al zombie)
-        particles.add(new Particle(11, 11, 0,0, 1));
+        // agrega al zombie
+        particles.add(new Particle(circleRadius, circleRadius, 0.3, 1, false, false));
 
-        for(int i = 0; i<N; i++){
-            double randomAngle = Math.random()*(360);
-            double randomRadius = Math.random()*(radius-1)+1;
-            randomX = 11+randomRadius*Math.cos(randomAngle);
-            randomY = 11+randomRadius*Math.sin(randomAngle);
-            particles.add(new Particle(randomX , randomY, 0, 0, 0.5));
+        // agrega las paredes
+        for(double j=0; j<360.0; j+=0.1){
+            particles.add(new Particle(circleRadius+circleRadius*Math.cos(j), circleRadius+circleRadius*Math.sin(j), 0, 0.75, true, true));
         }
         filePositionGenerator.addParticles(particles);
     }
 
     public void simulate(){
-        while(!cutCondition()){
+        while(!cutCondition(countZombies)){
+
+
+            for(int i = 0; i<particles.size(); i++){
+                //se mueve el zombie
+                if((particles.get(i).isWall == false) && (particles.get(i).isHuman == false)){
+                    //se fija si tiene a alguien cerca
+                    checkProximity(particles.get(i));
+                    particles.get(i).move();
+                }
+
+                //se mueve los humanos
+                if((particles.get(i).isWall == false) && (particles.get(i).isHuman == true)){
+                    //se fija si tiene a alguien cerca
+                    checkProximity(particles.get(i));
+                    particles.get(i).move();
+                }
+            }
+
+            // maso como seria
+            // zombies recorren de manera random buscando humanos a velocidad baja (0.3m/s)
+                // si un zombie encuentra humanos, se dirige al mas cercano con velZ
+                // los humanos intentan escapar del zombie
+                // si aparece uno mas cercano, cambia a ese target
+                    // se quedan pegados 7 segundos
+                    // el humano se convierte en zombie
+
+            // humanos quieren escapar del zombie, esquivando paredes y humanos
+
+            // guarda posiciones de todas las particulas
 
         }
     }
 
-    public boolean cutCondition(){
+    // puede ser el que querramos.
+    // un tiempo/un porcentaje de zombies/etc
+    public boolean cutCondition(int countZombies){
         return true;
+        //return ((countZombies/N)>=0.75? true : false);
+    }
+
+    public boolean particleOverlaps(double x, double y){
+        for(int i=0; i<particles.size(); i++){
+            if((Math.abs(x - particles.get(i).xPos)<0) && (Math.abs(y - particles.get(i).yPos)<0)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void checkProximity(Particle particle){
+
     }
 }
