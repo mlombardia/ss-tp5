@@ -31,8 +31,8 @@ public class FilePositionGenerator {
         try {
             buffer1.write(particles.size() + "\n");
             buffer1.write("XPosition YPosition Radius Color\n");
-            for(int i=0; i< particles.size(); i++){
-                buffer1.write(particles.get(i).xPos + " " + particles.get(i).yPos + " " + Math.pow(10, -1) + " " + particles.get(i).color + " " + "\n");
+            for (Particle particle : particles) {
+                buffer1.write(particle.getXPos() + " " + particle.getYPos() + " " + Math.pow(10, -1) + " " + particle.getColor() + " " + "\n");
             }
         } catch (IOException e) {
             e.printStackTrace();

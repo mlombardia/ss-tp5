@@ -18,7 +18,7 @@ public class SimulationController {
     double deltaT;
     double t = 0;
 
-    public SimulationController(int N, double velZ, double deltaT, FilePositionGenerator filePositionGenerator){
+    public SimulationController(int N, double velZ, double deltaT, FilePositionGenerator filePositionGenerator) {
         this.N = N;
         this.velZ = velZ;
         this.deltaT = deltaT;
@@ -27,17 +27,17 @@ public class SimulationController {
         simulate();
     }
 
-    public void generateMap(){
+    public void generateMap() {
         double randomX, randomY;
 
         // agrega los humanos
-        while (particles.size() < N){
-            double randomAngle = Math.random()*(360);
-            double randomRadius = Math.random()*(circleRadius-1)+1;
-            randomX = circleRadius+randomRadius*Math.cos(randomAngle);
-            randomY = circleRadius+randomRadius*Math.sin(randomAngle);
-            if(!particleOverlaps(randomX, randomY)){
-                particles.add(new Particle(randomX , randomY, 0, 0.5, true, false));
+        while (particles.size() < N) {
+            double randomAngle = Math.random() * (360);
+            double randomRadius = Math.random() * (circleRadius - 1) + 1;
+            randomX = circleRadius + randomRadius * Math.cos(randomAngle);
+            randomY = circleRadius + randomRadius * Math.sin(randomAngle);
+            if (!particleOverlaps(randomX, randomY)) {
+                particles.add(new Particle(randomX, randomY, 0, 0.5, true, false));
             }
         }
 
@@ -45,39 +45,30 @@ public class SimulationController {
         particles.add(new Particle(circleRadius, circleRadius, 0.3, 1, false, false));
 
         // agrega las paredes
-        for(double j=0; j<360.0; j+=0.1){
-            particles.add(new Particle(circleRadius+circleRadius*Math.cos(j), circleRadius+circleRadius*Math.sin(j), 0, 0.75, true, true));
+        for (double j = 0; j < 360.0; j += 0.1) {
+            particles.add(new Particle(circleRadius + circleRadius * Math.cos(j), circleRadius + circleRadius * Math.sin(j), 0, 0.75, true, true));
         }
         filePositionGenerator.addParticles(particles);
     }
 
-    public void simulate(){
-        while(!cutCondition(countZombies)){
+    public void simulate() {
+        while (!cutCondition(countZombies)) {
 
 
-            for(int i = 0; i<particles.size(); i++){
-                //se mueve el zombie
-                if((particles.get(i).isWall == false) && (particles.get(i).isHuman == false)){
-                    //se fija si tiene a alguien cerca
-                    checkProximity(particles.get(i));
-                    particles.get(i).move();
-                }
-
-                //se mueve los humanos
-                if((particles.get(i).isWall == false) && (particles.get(i).isHuman == true)){
-                    //se fija si tiene a alguien cerca
-                    checkProximity(particles.get(i));
-                    particles.get(i).move();
-                }
+            for (Particle particle : particles) {
+                //se mueven las particulas
+                //se fija si tiene a alguien cerca
+                checkProximity(particle);
+                particle.move();
             }
 
             // maso como seria
             // zombies recorren de manera random buscando humanos a velocidad baja (0.3m/s)
-                // si un zombie encuentra humanos, se dirige al mas cercano con velZ
-                // los humanos intentan escapar del zombie
-                // si aparece uno mas cercano, cambia a ese target
-                    // se quedan pegados 7 segundos
-                    // el humano se convierte en zombie
+            // si un zombie encuentra humanos, se dirige al mas cercano con velZ
+            // los humanos intentan escapar del zombie
+            // si aparece uno mas cercano, cambia a ese target
+            // se quedan pegados 7 segundos
+            // el humano se convierte en zombie
 
             // humanos quieren escapar del zombie, esquivando paredes y humanos
 
@@ -88,21 +79,21 @@ public class SimulationController {
 
     // puede ser el que querramos.
     // un tiempo/un porcentaje de zombies/etc
-    public boolean cutCondition(int countZombies){
+    public boolean cutCondition(int countZombies) {
         return true;
         //return ((countZombies/N)>=0.75? true : false);
     }
 
-    public boolean particleOverlaps(double x, double y){
-        for(int i=0; i<particles.size(); i++){
-            if((Math.abs(x - particles.get(i).xPos)<0) && (Math.abs(y - particles.get(i).yPos)<0)){
+    public boolean particleOverlaps(double x, double y) {
+        for (Particle particle : particles) {
+            if ((Math.abs(x - particle.getXPos()) < 0) && (Math.abs(y - particle.getYPos()) < 0)) {
                 return true;
             }
         }
         return false;
     }
 
-    public void checkProximity(Particle particle){
+    public void checkProximity(Particle particle) {
 
     }
 }
