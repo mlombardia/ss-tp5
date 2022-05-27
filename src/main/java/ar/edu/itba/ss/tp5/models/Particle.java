@@ -4,6 +4,8 @@ import javafx.util.Pair;
 
 import java.util.Objects;
 
+import static ar.edu.itba.ss.tp5.simulation.SimulationController.*;
+
 public class Particle {
     private int id;
     private double xPos;
@@ -14,6 +16,8 @@ public class Particle {
     private double color;
     private boolean isHuman;
     private boolean isWall;
+
+    //TODO private double radius;
 
     public Particle(int id, double xPos, double yPos, double vel, double color, boolean isHuman, boolean isWall) {
         this.id = id;
@@ -50,11 +54,11 @@ public class Particle {
         return vel;
     }
 
-    public double getxVel() {
+    public double getXVel() {
         return xVel;
     }
 
-    public double getyVel() {
+    public double getYVel() {
         return yVel;
     }
 
@@ -69,6 +73,7 @@ public class Particle {
     public boolean isWall() {
         return isWall;
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -83,6 +88,28 @@ public class Particle {
     }
 
     public void move(Pair<Double, Particle> closest) {
+        double distance = closest.getKey();
+        Particle particle = closest.getValue();
+
+        if (this.isZombie()) {
+            if (distance > interactionDistance) {
+                this.vel = zombieVelocity;
+                // ir por targets randoms
+                persecutions.remove(this);
+            } else {
+                this.vel = persecutionZombieVelocity;
+                // ir en la direccion de la particula que persigo
+                persecutions.put(this, particle); //zombie, human
+            }
+        } else {
+            if (persecutions.containsValue(particle)) { //si esta siendo perseguido
+
+            } else if (distance > interactionDistance) { //si no tiene nada cerca
+                this.vel = 0;
+            } else { //si tiene otro humano cerca -> se repelen
+
+            }
+        }
 
     }
 }

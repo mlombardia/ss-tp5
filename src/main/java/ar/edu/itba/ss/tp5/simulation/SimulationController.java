@@ -5,7 +5,9 @@ import ar.edu.itba.ss.tp5.models.Particle;
 import javafx.util.Pair;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class SimulationController {
 
@@ -18,6 +20,12 @@ public class SimulationController {
     int countZombies = 1;
     double deltaT;
     double t = 0;
+
+    public static double interactionDistance = 4;
+    public static double zombieVelocity = 0.3;
+    public static double persecutionZombieVelocity = 4;
+
+    public static Map<Particle, Particle> persecutions = new HashMap<>();
 
     public SimulationController(int N, double velZ, double deltaT, FilePositionGenerator filePositionGenerator) {
         this.N = N;
@@ -43,7 +51,7 @@ public class SimulationController {
         }
 
         // agrega al zombie
-        particles.add(new Particle(particles.size(), circleRadius, circleRadius, 0.3, 1, false, false));
+        particles.add(new Particle(particles.size(), circleRadius, circleRadius, zombieVelocity, 1, false, false));
 
         // agrega las paredes
         for (double j = 0; j < 360.0; j += 0.1) {
@@ -58,9 +66,7 @@ public class SimulationController {
 
 
             for (Particle particle : particles) {
-                //se mueven las particulas
-                //se fija si tiene a alguien cerca
-                Pair<Double, Particle> closest = checkProximity(particle);
+                Pair<Double, Particle> closest = checkProximity(particle); //se fija si tiene a alguien cerca
                 particle.move(closest);
             }
 
@@ -105,7 +111,7 @@ public class SimulationController {
         double closestDistance = calculateDistance(particle, closestParticle);
         for (Particle p : particles) {
             double dist = calculateDistance(particle, p);
-            if ((!p.equals(particle)) && (dist < closestDistance)) {
+            if ((!p.equals(particle)) && (dist < closestDistance) && !(p.isZombie() && particle.isZombie())) {
                 closestParticle = p;
                 closestDistance = dist;
             }
