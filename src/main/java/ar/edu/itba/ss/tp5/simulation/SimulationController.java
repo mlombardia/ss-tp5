@@ -37,12 +37,12 @@ public class SimulationController {
             randomX = circleRadius + randomRadius * Math.cos(randomAngle);
             randomY = circleRadius + randomRadius * Math.sin(randomAngle);
             if (!particleOverlaps(randomX, randomY)) {
-                particles.add(new Particle(randomX, randomY, 0, 0.5, true, false));
+                particles.add(new Particle(particles.size(), randomX, randomY, 0, 0.5, true, false));
             }
         }
 
         // agrega al zombie
-        particles.add(new Particle(circleRadius, circleRadius, 0.3, 1, false, false));
+        particles.add(new Particle(particles.size(), circleRadius, circleRadius, 0.3, 1, false, false));
 
         // agrega las paredes
         for (double j = 0; j < 360.0; j += 0.1) {
@@ -52,14 +52,15 @@ public class SimulationController {
     }
 
     public void simulate() {
+        Particle closestParticle;
         while (!cutCondition(countZombies)) {
 
 
             for (Particle particle : particles) {
                 //se mueven las particulas
                 //se fija si tiene a alguien cerca
-                checkProximity(particle);
-                particle.move();
+                closestParticle = checkProximity(particle);
+                particle.move(closestParticle);
             }
 
             // maso como seria
@@ -93,7 +94,21 @@ public class SimulationController {
         return false;
     }
 
-    public void checkProximity(Particle particle) {
 
+    private double calculateDistance(Particle p1, Particle p2) {
+        return Math.sqrt(Math.pow(p1.getXPos() - p2.getXPos(), 2) - Math.pow(p1.getYPos() - p2.getYPos(), 2));
+    }
+
+    public Particle checkProximity(Particle particle) {
+        Particle closestParticle = particle.equals(particles.get(0)) ? particles.get(1) : particles.get(0);
+        double closestDistance = calculateDistance(particle, closestParticle);
+        for (Particle p : particles) {
+            double dist = calculateDistance(particle, p);
+            if (dist < closestDistance) {
+                closestParticle = p;
+                closestDistance = dist;
+            }
+        }
+        return closestParticle;
     }
 }

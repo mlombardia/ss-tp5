@@ -1,6 +1,7 @@
 package ar.edu.itba.ss.tp5.models;
 
 public class Particle {
+    private int id;
     private double xPos;
     private double yPos;
     private double vel;
@@ -9,6 +10,16 @@ public class Particle {
     private double color;
     private boolean isHuman;
     private boolean isWall;
+
+    public Particle(int id, double xPos, double yPos, double vel, double color, boolean isHuman, boolean isWall) {
+        this.id = id;
+        this.xPos = xPos;
+        this.yPos = yPos;
+        this.vel = vel;
+        this.color = color;
+        this.isHuman = isHuman;
+        this.isWall = isWall;
+    }
 
     public Particle(double xPos, double yPos, double vel, double color, boolean isHuman, boolean isWall) {
         this.xPos = xPos;
@@ -55,7 +66,7 @@ public class Particle {
         return isWall;
     }
 
-    public void move() {
+    public void move(Particle closestParticle) {
 
     }
 }
