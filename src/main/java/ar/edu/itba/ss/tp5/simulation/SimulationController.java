@@ -2,6 +2,7 @@ package ar.edu.itba.ss.tp5.simulation;
 
 import ar.edu.itba.ss.tp5.models.FilePositionGenerator;
 import ar.edu.itba.ss.tp5.models.Particle;
+import javafx.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,8 +60,8 @@ public class SimulationController {
             for (Particle particle : particles) {
                 //se mueven las particulas
                 //se fija si tiene a alguien cerca
-                closestParticle = checkProximity(particle);
-                particle.move(closestParticle);
+                Pair<Double, Particle> closest = checkProximity(particle);
+                particle.move(closest);
             }
 
             // maso como seria
@@ -99,16 +100,16 @@ public class SimulationController {
         return Math.sqrt(Math.pow(p1.getXPos() - p2.getXPos(), 2) - Math.pow(p1.getYPos() - p2.getYPos(), 2));
     }
 
-    public Particle checkProximity(Particle particle) {
+    public Pair<Double, Particle> checkProximity(Particle particle) {
         Particle closestParticle = particle.equals(particles.get(0)) ? particles.get(1) : particles.get(0);
         double closestDistance = calculateDistance(particle, closestParticle);
         for (Particle p : particles) {
             double dist = calculateDistance(particle, p);
-            if (dist < closestDistance) {
+            if ((!p.equals(particle)) && (dist < closestDistance)) {
                 closestParticle = p;
                 closestDistance = dist;
             }
         }
-        return closestParticle;
+        return new Pair<>(closestDistance, closestParticle);
     }
 }

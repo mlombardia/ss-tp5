@@ -1,5 +1,9 @@
 package ar.edu.itba.ss.tp5.models;
 
+import javafx.util.Pair;
+
+import java.util.Objects;
+
 public class Particle {
     private int id;
     private double xPos;
@@ -65,8 +69,20 @@ public class Particle {
     public boolean isWall() {
         return isWall;
     }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Particle particle = (Particle) o;
+        return id == particle.id;
+    }
 
-    public void move(Particle closestParticle) {
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    public void move(Pair<Double, Particle> closest) {
 
     }
 }
