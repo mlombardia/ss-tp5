@@ -17,33 +17,43 @@ public class Particle {
     private boolean isHuman;
     private boolean isWall;
 
-    //TODO private double radius;
+    private double radius;
 
-    public Particle(int id, double xPos, double yPos, double vel, double color, boolean isHuman, boolean isWall) {
+    public Particle(int id, double xPos, double yPos, double vel, double radius, double color, boolean isHuman, boolean isWall) {
         this.id = id;
         this.xPos = xPos;
         this.yPos = yPos;
         this.vel = vel;
+        this.radius = radius;
         this.color = color;
         this.isHuman = isHuman;
         this.isWall = isWall;
     }
 
-    public Particle(double xPos, double yPos, double vel, double color, boolean isHuman, boolean isWall) {
+    public Particle(double xPos, double yPos, double vel, double radius, double color, boolean isHuman, boolean isWall) {
         this.xPos = xPos;
         this.yPos = yPos;
         this.vel = vel;
+        this.radius = radius;
         this.color = color;
         this.isHuman = isHuman;
         this.isWall = isWall;
     }
 
     public double getXPos() {
-        return xPos;
+        return this.xPos;
+    }
+
+    public void setXPos(double xPos) {
+        this.xPos = xPos;
     }
 
     public double getYPos() {
-        return yPos;
+        return this.yPos;
+    }
+
+    public void setYPos(double yPos) {
+        this.yPos = yPos;
     }
 
     public boolean isZombie() {
@@ -54,12 +64,32 @@ public class Particle {
         return vel;
     }
 
+    public void setVel(double vel) {
+        this.vel = vel;
+    }
+
     public double getXVel() {
         return xVel;
     }
 
+    public void setXVel(double xVel) {
+        this.xVel = xVel;
+    }
+
     public double getYVel() {
         return yVel;
+    }
+
+    public void setYVel(double yVel) {
+        this.yVel = yVel;
+    }
+
+    public double getRadius() {
+        return this.radius;
+    }
+
+    public void setRadius(double radius){
+        this.radius = radius;
     }
 
     public double getColor() {
@@ -72,6 +102,11 @@ public class Particle {
 
     public boolean isWall() {
         return isWall;
+    }
+
+    public boolean isAtContact(){
+        // WIP :'(
+        return true;
     }
 
     @Override

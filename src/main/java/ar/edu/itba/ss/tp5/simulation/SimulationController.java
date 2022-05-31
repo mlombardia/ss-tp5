@@ -46,16 +46,16 @@ public class SimulationController {
             randomX = circleRadius + randomRadius * Math.cos(randomAngle);
             randomY = circleRadius + randomRadius * Math.sin(randomAngle);
             if (!particleOverlaps(randomX, randomY)) {
-                particles.add(new Particle(particles.size(), randomX, randomY, 0, 0.5, true, false));
+                particles.add(new Particle(particles.size(), randomX, randomY, 0,0.2, 0.5, true, false));
             }
         }
 
         // agrega al zombie
-        particles.add(new Particle(particles.size(), circleRadius, circleRadius, zombieVelocity, 1, false, false));
+        particles.add(new Particle(particles.size(), circleRadius, circleRadius, zombieVelocity, 0.2,1, false, false));
 
         // agrega las paredes
         for (double j = 0; j < 360.0; j += 0.1) {
-            particles.add(new Particle(circleRadius + circleRadius * Math.cos(j), circleRadius + circleRadius * Math.sin(j), 0, 0.75, true, true));
+            particles.add(new Particle(circleRadius + circleRadius * Math.cos(j), circleRadius + circleRadius * Math.sin(j), 0, 0.2, 0.75, true, true));
         }
         filePositionGenerator.addParticles(particles);
     }
