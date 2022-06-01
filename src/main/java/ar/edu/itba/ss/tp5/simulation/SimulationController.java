@@ -2,6 +2,7 @@ package ar.edu.itba.ss.tp5.simulation;
 
 import ar.edu.itba.ss.tp5.models.FilePositionGenerator;
 import ar.edu.itba.ss.tp5.models.Particle;
+import com.sun.xml.internal.bind.v2.runtime.reflect.Lister;
 import javafx.util.Pair;
 
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.Map;
 
 public class SimulationController {
 
-    List<Particle> particles = new ArrayList<>();
+    static List<Particle> particles = new ArrayList<>();
     FilePositionGenerator filePositionGenerator;
     int N;
     int circleRadius = 11;
@@ -46,12 +47,12 @@ public class SimulationController {
             randomX = circleRadius + randomRadius * Math.cos(randomAngle);
             randomY = circleRadius + randomRadius * Math.sin(randomAngle);
             if (!particleOverlaps(randomX, randomY)) {
-                particles.add(new Particle(particles.size(), randomX, randomY, 0,0.2, 0.5, true, false));
+                particles.add(new Particle(particles.size(), randomX, randomY, 0, 0.2, 0.5, true, false));
             }
         }
 
         // agrega al zombie
-        particles.add(new Particle(particles.size(), circleRadius, circleRadius, zombieVelocity, 0.2,1, false, false));
+        particles.add(new Particle(particles.size(), circleRadius, circleRadius, zombieVelocity, 0.2, 1, false, false));
 
         // agrega las paredes
         for (double j = 0; j < 360.0; j += 0.1) {
@@ -102,7 +103,7 @@ public class SimulationController {
     }
 
 
-    private double calculateDistance(Particle p1, Particle p2) {
+    public static double calculateDistance(Particle p1, Particle p2) {
         return Math.sqrt(Math.pow(p1.getXPos() - p2.getXPos(), 2) - Math.pow(p1.getYPos() - p2.getYPos(), 2));
     }
 
@@ -118,4 +119,18 @@ public class SimulationController {
         }
         return new Pair<>(closestDistance, closestParticle);
     }
+
+    public static double getRandom(double min, double max) {
+        return (Math.random() * (max - min + 1) + min);
+    }
+
+    public static Particle getRandomTarget() {
+        List<Particle> humans = new ArrayList<>();
+        for (Particle p : particles) {
+            if (p.isHuman()) humans.add(p);
+        }
+        int rand = (int) getRandom(0, humans.size());
+        return humans.get(rand);
+    }
 }
+
