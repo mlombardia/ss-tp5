@@ -30,4 +30,25 @@ public class Dynamics {
             particle.setYPos(particle.getYPos() + particle.getVel() * deltaT);
         }
     }
+
+    public static void predictiveCollisionAvoidance(Particle particle){
+
+        double desiredVel = 0; // TODO chequear como seria esto de la desired vel
+
+        double Fg = (desiredVel-particle.getVel())/tau;
+
+        double Fe = 0; // TODO verificar approaches
+
+    }
+
+    public static void reRoute(Particle particle) {
+
+        setTemporalTarget(particle);
+
+        // aca habria que moverlo al target original
+    }
+
+    private static void setTemporalTarget(Particle particle){
+        return;
+    }
 }
