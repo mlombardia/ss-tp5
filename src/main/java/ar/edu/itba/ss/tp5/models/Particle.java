@@ -220,7 +220,7 @@ public class Particle {
                     distance = aux;
                 }
             }
-            if (distance > obstacleDistance) {
+            if (obstacleDistance > humanInteractionDistance) {
                 setNewDirection(closestZombie); //solo escapar del zombie
             } else {
                 //TODO setTemporalTarget //evitar al zombie y la pared/humano
@@ -250,9 +250,9 @@ public class Particle {
                 persecuteRandomHuman();
             }
         } else {
-            if (this.getRadius() < maxParticleRadius) {
-                this.setRadius(this.getRadius() + radiusStep);
-            }
+//            if (this.getRadius() < maxParticleRadius) {
+//                this.setRadius(this.getRadius() + radiusStep);
+//            }
             if (this.isZombie()) {
                 if (distance > interactionDistance || particle.isZombie() || particle.isWall()) {
                     this.vel = zombieVelocity;
@@ -276,14 +276,14 @@ public class Particle {
                 } else if (distance == 0) { //si se choco
                     setVelocityToZero(this);
                     setVelocityToZero(particle);
-                    if (!this.isHuman() || !particle.isHuman()) {
+                    this.setRadius(minParticleRadius);
+                    particle.setRadius(minParticleRadius);
+                    if (!this.isHuman() || !particle.isHuman() && !this.isWall() && !particle.isWall) {
                         this.setWaiting(true);
                         particle.setWaiting(true);
                         this.setCollisionTime(System.currentTimeMillis());
                         particle.setCollisionTime(System.currentTimeMillis());
                     }
-                    this.setRadius(minParticleRadius);
-                    particle.setRadius(minParticleRadius);
                 } else {
                     if (particle.isHuman()) {
                         repelHumans(particle);
