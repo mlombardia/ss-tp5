@@ -27,6 +27,11 @@ public class SimulationController {
     public static double zombieVelocity = 0.3;
     public static double persecutionZombieVelocity = 4;
 
+    public static double minParticleRadius = 0.2;
+
+    public static double maxParticleRadius = 0.5;
+    public static double radiusStep = 0.05;
+
     public static Map<Particle, Particle> persecutions = new HashMap<>();
 
     public SimulationController(int N, double velZ, double deltaT, FilePositionGenerator filePositionGenerator) {
@@ -48,16 +53,16 @@ public class SimulationController {
             randomX = circleRadius + randomRadius * Math.cos(randomAngle);
             randomY = circleRadius + randomRadius * Math.sin(randomAngle);
             if (!particleOverlaps(randomX, randomY)) {
-                particles.add(new Particle(particles.size(), randomX, randomY, 0, 0.2, 0.5, true, false));
+                particles.add(new Particle(particles.size(), randomX, randomY, 0, minParticleRadius, 0.5, true, false));
             }
         }
 
         // agrega al zombie
-        particles.add(new Particle(particles.size(), circleRadius, circleRadius, zombieVelocity, 0.2, 1, false, false));
+        particles.add(new Particle(particles.size(), circleRadius, circleRadius, zombieVelocity, minParticleRadius, 1, false, false));
 
         // agrega las paredes
         for (double j = 0; j < 360.0; j += 0.1) {
-            particles.add(new Particle(circleRadius + circleRadius * Math.cos(j), circleRadius + circleRadius * Math.sin(j), 0, 0.2, 0.75, true, true));
+            particles.add(new Particle(circleRadius + circleRadius * Math.cos(j), circleRadius + circleRadius * Math.sin(j), 0, minParticleRadius, 0.75, true, true));
         }
         filePositionGenerator.addParticles(particles);
     }
@@ -105,7 +110,7 @@ public class SimulationController {
 
 
     public static double calculateDistance(Particle p1, Particle p2) {
-        return Math.sqrt(Math.pow((p1.getXPos()-p1.getRadius()) - (p2.getXPos()-p2.getRadius()), 2) - Math.pow((p1.getYPos()-p1.getRadius()) - (p2.getYPos()-p2.getRadius()), 2));
+        return Math.sqrt(Math.pow((p1.getXPos() - p1.getRadius()) - (p2.getXPos() - p2.getRadius()), 2) - Math.pow((p1.getYPos() - p1.getRadius()) - (p2.getYPos() - p2.getRadius()), 2));
     }
 
     public Pair<Double, Particle> checkProximity(Particle particle) {
