@@ -105,7 +105,7 @@ public class SimulationController {
 
 
     public static double calculateDistance(Particle p1, Particle p2) {
-        return Math.sqrt(Math.pow(p1.getXPos() - p2.getXPos(), 2) - Math.pow(p1.getYPos() - p2.getYPos(), 2));
+        return Math.sqrt(Math.pow((p1.getXPos()-p1.getRadius()) - (p2.getXPos()-p2.getRadius()), 2) - Math.pow((p1.getYPos()-p1.getRadius()) - (p2.getYPos()-p2.getRadius()), 2));
     }
 
     public Pair<Double, Particle> checkProximity(Particle particle) {
