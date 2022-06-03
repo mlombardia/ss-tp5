@@ -24,6 +24,10 @@ public class Particle {
 
     private double radius;
 
+    private long collisionTime = 0;
+
+    private boolean isWaiting = false; //esta comiendo o siendo comido
+
     public Particle(int id, double xPos, double yPos, double vel, double radius, double color, boolean isHuman, boolean isWall) {
         this.id = id;
         this.xPos = xPos;
@@ -122,6 +126,22 @@ public class Particle {
         return true;
     }
 
+    public long getCollisionTime() {
+        return collisionTime;
+    }
+
+    public void setCollisionTime(long collisionTime) {
+        this.collisionTime = collisionTime;
+    }
+
+    public boolean isWaiting() {
+        return isWaiting;
+    }
+
+    public void setWaiting(boolean waiting) {
+        isWaiting = waiting;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -135,7 +155,7 @@ public class Particle {
         return Objects.hash(id);
     }
 
-    private void setNewDirection(Particle particle){
+    private void setNewDirection(Particle particle) {
         double angleX = Math.acos(particle.getXVel() / particle.vel);
         double angleY = Math.asin(particle.getYVel() / particle.vel);
         this.xVel = this.vel * Math.cos(angleX);
@@ -189,35 +209,49 @@ public class Particle {
     }
 
     private void avoidZombies(List<Particle> zombies, Particle obstacle, double obstacleDistance) {
-        if (zombies.size() > 0){
+        if (zombies.size() > 0) {
             Particle closestZombie = zombies.get(0);
             double distance = calculateDistance(this, zombies.get(0));
-            for (Particle zombie: zombies){
+            for (Particle zombie : zombies) {
                 double aux = calculateDistance(this, zombie);
-                if (aux < distance){
+                if (aux < distance) {
                     closestZombie = zombie;
                     distance = aux;
                 }
             }
-            if (distance > obstacleDistance){
+            if (distance > obstacleDistance) {
                 setNewDirection(closestZombie); //solo escapar del zombie
-            }else{
+            } else {
                 //TODO setTemporalTarget //evitar al zombie y la pared/humano
             }
             //play with the obstacle and the closest zombie
         }
     }
 
+    private void persecuteRandomHuman() {
+        Particle p = getRandomTarget(); //busca un humano random para perseguir
+        persecuteHuman(p);
+    }
+
+    private void setVelocityToZero(Particle particle) {
+        particle.vel = 0;
+        particle.xVel = 0;
+        particle.yVel = 0;
+    }
+
     public void move(Pair<Double, Particle> closest) {
         double distance = closest.getKey();
         Particle particle = closest.getValue();
-
-        if (this.isZombie()) {
+        if (this.isWaiting()) { //si esta siendo comido o comiendo
+            if (System.currentTimeMillis() - this.getCollisionTime() > 7000) {
+                this.setWaiting(false);
+                persecuteRandomHuman();
+            }
+        } else if (this.isZombie()) {
             if (distance > interactionDistance || particle.isZombie() || particle.isWall()) {
                 this.vel = zombieVelocity;
                 if (particle.isZombie() || particle.isWall()) { //si lo que tiene mas cerca es otro zombie o una pared
-                    Particle p = getRandomTarget(); //busca un humano random para perseguir
-                    persecuteHuman(p);
+                    persecuteRandomHuman();
                 } else {
                     persecuteHuman(particle);
                 }
@@ -231,10 +265,15 @@ public class Particle {
             if (persecutions.containsValue(this)) { //si esta siendo perseguido
                 List<Particle> dangerousZombies = getZombiesPersecutingHuman(this);
                 avoidZombies(dangerousZombies, particle, distance);
-            } else if (distance > humanInteractionDistance || distance == 0) { //si no tiene nada cerca o se choco
-                this.vel = 0;
-                this.xVel = 0;
-                this.yVel = 0;
+            } else if (distance > humanInteractionDistance) { //si no tiene nada cerca
+                setVelocityToZero(this);
+            } else if (distance == 0) { //si se choco
+                setVelocityToZero(this);
+                setVelocityToZero(particle);
+                this.setWaiting(true);
+                particle.setWaiting(true);
+                this.setCollisionTime(System.currentTimeMillis());
+                particle.setCollisionTime(System.currentTimeMillis());
             } else {
                 if (particle.isHuman()) {
                     repelHumans(particle);
@@ -245,6 +284,5 @@ public class Particle {
         }
 
     }
-
 
 }
