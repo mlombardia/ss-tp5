@@ -1,6 +1,7 @@
 package ar.edu.itba.ss.tp5.simulation;
 
 import ar.edu.itba.ss.tp5.models.Particle;
+import javafx.util.Pair;
 
 public class Dynamics {
 
@@ -43,12 +44,19 @@ public class Dynamics {
 
     public static void reRoute(Particle particle) {
 
-        setTemporalTarget(particle);
+        //setear target temporal
+        if (particle.isVertical){
+            particle.targets.push(new Pair(particle.getXPos()+Math.cos(205 * Math.PI / 180.0), particle.getYPos()-4));
+        } else {
+            particle.targets.push(new Pair(particle.getXPos()-4, particle.getYPos()+Math.sin(115 * Math.PI / 180.0)));
+        }
 
-        // aca habria que moverlo al target original
-    }
-
-    private static void setTemporalTarget(Particle particle){
-        return;
     }
 }
+
+
+/*
+moviendo para zombie y humano-> en c tick move()
+zombie -> persigue o se queda random
+humano -> quieto o escapando -> sin obstaculos o con obstaculos -> reRoute() -> setea target
+ */

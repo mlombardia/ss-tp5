@@ -1,12 +1,8 @@
 package ar.edu.itba.ss.tp5.models;
 
-import com.sun.xml.internal.ws.wsdl.writer.document.Part;
 import javafx.util.Pair;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ar.edu.itba.ss.tp5.simulation.SimulationController.*;
@@ -22,11 +18,14 @@ public class Particle {
     private final boolean isHuman;
     private final boolean isWall;
 
+    public Stack<Pair<Double, Double>> targets;
     private double radius;
-
+    
     private long collisionTime = 0;
 
     private boolean isWaiting = false; //esta comiendo o siendo comido
+
+    public boolean isVertical;
 
     public Particle(int id, double xPos, double yPos, double vel, double radius, double color, boolean isHuman, boolean isWall) {
         this.id = id;
@@ -41,6 +40,8 @@ public class Particle {
         double angleInRadians = angle * Math.PI / 180.0;
         this.xVel = Math.cos(angleInRadians) * vel;
         this.yVel = Math.sin(angleInRadians) * vel;
+        this.targets = new Stack<Pair<Double,Double>>();
+        this.isVertical = false;
     }
 
     public Particle(double xPos, double yPos, double vel, double radius, double color, boolean isHuman, boolean isWall) {
