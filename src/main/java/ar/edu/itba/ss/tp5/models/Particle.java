@@ -135,12 +135,16 @@ public class Particle {
         return Objects.hash(id);
     }
 
+    private void setNewDirection(Particle particle){
+        double angleX = Math.acos(particle.getXVel() / particle.vel);
+        double angleY = Math.asin(particle.getYVel() / particle.vel);
+        this.xVel = this.vel * Math.cos(angleX);
+        this.yVel = this.vel * Math.sin(angleY);
+    }
+
     private void persecuteHuman(Particle human) {
         // ir en la direccion de la particula que persigo
-        double humanDirectionX = Math.acos(human.getXVel() / human.vel);
-        double humanDirectionY = Math.asin(human.getYVel() / human.vel);
-        this.xVel = this.vel * Math.cos(humanDirectionX);
-        this.yVel = this.vel * Math.sin(humanDirectionY);
+        setNewDirection(human);
     }
 
     private void repelHumans(Particle human) {
@@ -184,7 +188,7 @@ public class Particle {
                 .collect(Collectors.toList());
     }
 
-    private void avoidZombies(List<Particle> zombies, Particle obstacle) {
+    private void avoidZombies(List<Particle> zombies, Particle obstacle, double obstacleDistance) {
         if (zombies.size() > 0){
             Particle closestZombie = zombies.get(0);
             double distance = calculateDistance(this, zombies.get(0));
@@ -195,6 +199,11 @@ public class Particle {
                     distance = aux;
                 }
             }
+            if (distance > obstacleDistance){
+                setNewDirection(closestZombie); //solo escapar del zombie
+            }else{
+                //TODO setTemporalTarget //evitar al zombie y la pared/humano
+            }
             //play with the obstacle and the closest zombie
         }
     }
@@ -204,7 +213,7 @@ public class Particle {
         Particle particle = closest.getValue();
 
         if (this.isZombie()) {
-            if (distance > interactionDistance) {
+            if (distance > interactionDistance || particle.isZombie() || particle.isWall()) {
                 this.vel = zombieVelocity;
                 if (particle.isZombie() || particle.isWall()) { //si lo que tiene mas cerca es otro zombie o una pared
                     Particle p = getRandomTarget(); //busca un humano random para perseguir
@@ -221,8 +230,8 @@ public class Particle {
         } else if (this.isHuman()) {
             if (persecutions.containsValue(this)) { //si esta siendo perseguido
                 List<Particle> dangerousZombies = getZombiesPersecutingHuman(this);
-                avoidZombies(dangerousZombies, particle);
-            } else if (distance > interactionDistance || distance == 0) { //si no tiene nada cerca o se choco
+                avoidZombies(dangerousZombies, particle, distance);
+            } else if (distance > humanInteractionDistance || distance == 0) { //si no tiene nada cerca o se choco
                 this.vel = 0;
                 this.xVel = 0;
                 this.yVel = 0;

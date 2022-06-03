@@ -2,7 +2,6 @@ package ar.edu.itba.ss.tp5.simulation;
 
 import ar.edu.itba.ss.tp5.models.FilePositionGenerator;
 import ar.edu.itba.ss.tp5.models.Particle;
-import com.sun.xml.internal.bind.v2.runtime.reflect.Lister;
 import javafx.util.Pair;
 
 import java.util.ArrayList;
@@ -23,6 +22,8 @@ public class SimulationController {
     double t = 0;
 
     public static double interactionDistance = 4;
+
+    public static double humanInteractionDistance = 2;
     public static double zombieVelocity = 0.3;
     public static double persecutionZombieVelocity = 4;
 
