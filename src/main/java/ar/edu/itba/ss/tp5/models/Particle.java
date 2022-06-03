@@ -1,5 +1,6 @@
 package ar.edu.itba.ss.tp5.models;
 
+import ar.edu.itba.ss.tp5.simulation.Dynamics;
 import javafx.util.Pair;
 
 import java.util.*;
@@ -166,6 +167,7 @@ public class Particle {
         double angleY = Math.asin(particle.getYVel() / particle.vel);
         this.xVel = this.vel * Math.cos(angleX);
         this.yVel = this.vel * Math.sin(angleY);
+        Dynamics.reRoute(particle);
     }
 
     private void persecuteHuman(Particle human) {
@@ -190,6 +192,13 @@ public class Particle {
         double secondAngleInRadians = secondHumanAngle * Math.PI / 180.0;
         human.xVel = Math.cos(secondAngleInRadians) * human.vel;
         human.yVel = Math.sin(secondAngleInRadians) * human.vel;
+        if (firstHumanAngle == 0){ // <-- H T -->
+            this.targets.push(new Pair(this.xPos + 4.0, this.yPos));
+            human.targets.push(new Pair(this.xPos - 4.0, this.yPos));
+        } else {                   // <-- T H -->
+            this.targets.push(new Pair(this.xPos - 4.0, this.yPos));
+            human.targets.push(new Pair(this.xPos + 4.0, this.yPos));
+        }
     }
 
     private void avoidWalls(Particle wall) {
@@ -197,11 +206,14 @@ public class Particle {
             if (Math.abs(wall.getYPos() - this.getYPos()) < interactionDistance / 2) { // y tambien verticalmente
                 this.xVel = -this.xVel; // sale para el otro lado
                 this.yVel = -this.yVel;
+                this.targets.push(new Pair(this.xPos + 4 * (this.xVel/Math.abs(this.xVel)) * Math.cos(270 * 180 * (this.xVel/Math.abs(this.xVel))), this.yPos + 4 * (this.yVel/Math.abs(this.yVel)) * Math.cos(270 * 180 * (this.yVel/Math.abs(this.yVel))))) //TODO TBD averiguar MCU
             } else { //solo horizontal
                 this.xVel = -this.xVel; //solo cambia su velocidad en x
+                this.targets.push(new Pair(this.xPos + (4 * (this.xVel/Math.abs(this.xVel))), this.yPos));
             }
         } else if (Math.abs(wall.getYPos() - this.getYPos()) < interactionDistance / 2) { //solo vertical
             this.yVel = -this.yVel; //solo cambia su velocidad en y
+            this.targets.push(new Pair(this.xPos, this.yPos + (4 * (this.yVel/Math.abs(this.yVel)))));
         }
     }
 
@@ -220,9 +232,12 @@ public class Particle {
                     distance = aux;
                 }
             }
+
             if (obstacleDistance > humanInteractionDistance) {
                 setNewDirection(closestZombie); //solo escapar del zombie
             } else {
+                Dynamics.reRoute(this);
+                Pair<Double,Double> newTarget = this.targets.pop(); // levantamos el nuevo target
                 //TODO setTemporalTarget //evitar al zombie y la pared/humano
             }
             //play with the obstacle and the closest zombie
