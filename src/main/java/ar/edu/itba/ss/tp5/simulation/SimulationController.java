@@ -18,19 +18,20 @@ public class SimulationController {
     double velZ;
     double velH = 4;
     int countZombies = 1;
-    double deltaT;
+    public static double deltaT;
     double t = 0;
 
     public static double interactionDistance = 4;
 
     public static double humanInteractionDistance = 2;
-    public static double zombieVelocity = 0.3;
+    public static double zombieVelocitySlow = 0.3;
     public static double persecutionZombieVelocity = 4;
 
-    public static double minParticleRadius = 0.2;
+    public static double minParticleRadius = 0.15;
 
-    public static double maxParticleRadius = 0.5;
+    public static double maxParticleRadius = 0.32;
     public static double radiusStep = 0.05;
+
 
     public static Map<Particle, Particle> persecutions = new HashMap<>();
 
@@ -40,7 +41,6 @@ public class SimulationController {
         this.deltaT = deltaT;
         this.filePositionGenerator = filePositionGenerator;
         generateMap();
-        simulate();
     }
 
     public void generateMap() {
@@ -58,7 +58,7 @@ public class SimulationController {
         }
 
         // agrega al zombie
-        particles.add(new Particle(particles.size(), circleRadius, circleRadius, zombieVelocity, minParticleRadius, 1, false, false));
+        particles.add(new Particle(particles.size(), circleRadius, circleRadius, zombieVelocitySlow, minParticleRadius, 1, false, false));
 
         // agrega las paredes
         for (double j = 0; j < 360.0; j += 0.1) {
@@ -72,7 +72,7 @@ public class SimulationController {
         while (!cutCondition(countZombies)) {
 
 
-            for (Particle particle : particles) {
+            for (Particle particle : particles) {       //habria que descartar los casos en los que particle sea pared
                 Pair<Double, Particle> closest = checkProximity(particle); //se fija si tiene a alguien cerca
                 particle.move(closest);
             }

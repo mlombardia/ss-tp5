@@ -13,6 +13,7 @@ public class App
         FilePositionGenerator filePositionGenerator = new FilePositionGenerator();
         SimulationController controller = new SimulationController(N, velZ, deltaT, filePositionGenerator);
         controller.simulate();
+
         filePositionGenerator.closeFiles();
     }
 

@@ -18,6 +18,7 @@ public class Particle {
     private final double color;
     private boolean isHuman;
     private final boolean isWall;
+    private boolean isAtContactWithHuman;
 
     public Stack<Pair<Double, Double>> targets;
     private double radius;
@@ -127,9 +128,12 @@ public class Particle {
         return isWall;
     }
 
-    public boolean isAtContact() {
-        // WIP :'(
-        return true;
+    public boolean isAtContactWithHuman() {
+        return isAtContactWithHuman;
+    }
+
+    public void setIsAtContactWithHuman(boolean bool){
+        this.isAtContactWithHuman = bool;
     }
 
     public long getCollisionTime() {
@@ -244,6 +248,8 @@ public class Particle {
         }
     }
 
+    //CREO QUE TENDRIA QUE ESTAR MOVIENDOSE RANDOM Y SI ENCUENTR UNO EN DISTANCE<RADIO QUE VE
+    //LO EMPIEZA A PERSEGUIR
     private void persecuteRandomHuman() {
         Particle p = getRandomTarget(); //busca un humano random para perseguir
         persecuteHuman(p);
@@ -260,7 +266,7 @@ public class Particle {
         Particle particle = closest.getValue();
         if (this.isWaiting()) { //si esta siendo comido o comiendo
             if (System.currentTimeMillis() - this.getCollisionTime() > 7000) {
-                this.setWaiting(false);
+                this.setWaiting(false);             //lo convierte en zombie
                 this.setHuman(false);
                 persecuteRandomHuman();
             }
@@ -270,15 +276,13 @@ public class Particle {
 //            }
             if (this.isZombie()) {
                 if (distance > interactionDistance || particle.isZombie() || particle.isWall()) {
-                    this.vel = zombieVelocity;
-                    if (particle.isZombie() || particle.isWall()) { //si lo que tiene mas cerca es otro zombie o una pared
-                        persecuteRandomHuman();
-                    } else {
-                        persecuteHuman(particle);
-                    }
+                    //this.vel = zombieVelocitySlow;
+                    persecuteRandomHuman();
                     persecutions.remove(this);
-                } else {
-                    this.vel = persecutionZombieVelocity;
+                } else if(distance == 0){               //si choco
+                    this.setWaiting(true);
+                } else {            // tiene a un humano cerca
+                    //this.vel = persecutionZombieVelocity;
                     persecutions.put(this, particle); //zombie, human
                     persecuteHuman(particle);
                 }
@@ -287,17 +291,18 @@ public class Particle {
                     List<Particle> dangerousZombies = getZombiesPersecutingHuman(this);
                     avoidZombies(dangerousZombies, particle, distance);
                 } else if (distance > humanInteractionDistance) { //si no tiene nada cerca
-                    setVelocityToZero(this);
-                } else if (distance == 0) { //si se choco
+                    //setVelocityToZero(this);
+                } else if (distance == 0) {     //si se choco
                     setVelocityToZero(this);
                     setVelocityToZero(particle);
-                    this.setRadius(minParticleRadius);
-                    particle.setRadius(minParticleRadius);
-                    if (!this.isHuman() || !particle.isHuman() && !this.isWall() && !particle.isWall) {
+                    this.setRadius(minParticleRadius);      //aca poner cpm
+                    if (particle.isZombie()) {          //si choco con un zombie
                         this.setWaiting(true);
-                        particle.setWaiting(true);
                         this.setCollisionTime(System.currentTimeMillis());
                         particle.setCollisionTime(System.currentTimeMillis());
+                    }
+                    else if(particle.isHuman){
+                        this.setIsAtContactWithHuman(true);
                     }
                 } else {
                     if (particle.isHuman()) {
