@@ -213,7 +213,7 @@ public class Particle {
             if (Math.abs(wall.getYPos() - this.getYPos()) < interactionDistance / 2) { // y tambien verticalmente
                 this.xVel = -this.xVel; // sale para el otro lado
                 this.yVel = -this.yVel;
-                this.targets.push(new Pair(this.xPos + 4 * (this.xVel/Math.abs(this.xVel)) * Math.cos(270 * 180 * (this.xVel/Math.abs(this.xVel))), this.yPos + 4 * (this.yVel/Math.abs(this.yVel)) * Math.cos(270 * 180 * (this.yVel/Math.abs(this.yVel))))); //TODO TBD averiguar MCU
+                this.targets.push(new Pair(this.xPos + 4 * (this.xVel/Math.abs(this.xVel)), this.yPos + 4 * (this.yVel/Math.abs(this.yVel))));
             } else { //solo horizontal
                 this.xVel = -this.xVel; //solo cambia su velocidad en x
                 this.targets.push(new Pair(this.xPos + (4 * (this.xVel/Math.abs(this.xVel))), this.yPos));
