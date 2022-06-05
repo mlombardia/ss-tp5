@@ -59,7 +59,7 @@ public class SimulationController {
             randomX = circleRadius + randomRadius * Math.cos(randomAngle);
             randomY = circleRadius + randomRadius * Math.sin(randomAngle);
             if (!particleOverlaps(randomX, randomY)) {
-                particles.add(new Particle(particles.size(), randomX, randomY, 0, minParticleRadius, humanColor, true, false));
+                particles.add(new Particle(particles.size(), randomX, randomY, 4, minParticleRadius, humanColor, true, false));
             }
         }
 
