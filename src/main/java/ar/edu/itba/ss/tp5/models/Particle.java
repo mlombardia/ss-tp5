@@ -1,6 +1,7 @@
 package ar.edu.itba.ss.tp5.models;
 
 import ar.edu.itba.ss.tp5.simulation.Dynamics;
+import ar.edu.itba.ss.tp5.simulation.SimulationController;
 import javafx.util.Pair;
 
 import java.util.*;
@@ -288,18 +289,19 @@ public class Particle {
             if (System.currentTimeMillis() - this.getCollisionTime() > 7000) {
                 this.setWaiting(false);             //lo convierte en zombie
                 this.setHuman(false);
+                countZombies++;
                 persecuteRandomHuman();
             }
         } else {
             if (this.isZombie()) {
                 if (distance > interactionDistance || particle.isZombie() || particle.isWall()) {
-                    //this.vel = zombieVelocitySlow;
+                    this.vel = zombieVelocitySlow;
                     persecuteRandomHuman();
                     persecutions.remove(this);
                 } else if(distance == 0){               //si choco
                     this.setWaiting(true);
                 } else {            // tiene a un humano cerca
-                    //this.vel = persecutionZombieVelocity;
+                    this.vel = persecutionZombieVelocity;
                     persecutions.put(this, particle); //zombie, human
                     persecuteHuman(particle);
                 }

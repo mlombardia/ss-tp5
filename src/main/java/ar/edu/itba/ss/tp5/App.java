@@ -12,7 +12,6 @@ public class App
         double deltaT = 0.1;
         FilePositionGenerator filePositionGenerator = new FilePositionGenerator();
         SimulationController controller = new SimulationController(N, velZ, deltaT, filePositionGenerator);
-        controller.simulate();
 
         filePositionGenerator.closeFiles();
     }

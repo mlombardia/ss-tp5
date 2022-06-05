@@ -17,7 +17,7 @@ public class SimulationController {
     int circleRadius = 11;
     double velZ;
     double velH = 4;
-    int countZombies = 1;
+    public static int countZombies = 1;
     public static double deltaT;
     double t = 0;
 
@@ -71,10 +71,11 @@ public class SimulationController {
         Particle closestParticle;
         while (!cutCondition(countZombies)) {
 
-
-            for (Particle particle : particles) {       //habria que descartar los casos en los que particle sea pared
-                Pair<Double, Particle> closest = checkProximity(particle); //se fija si tiene a alguien cerca
-                particle.move(closest);
+            for (Particle particle : particles) {
+                if(!particle.isWall()){
+                    Pair<Double, Particle> closest = checkProximity(particle); //se fija si tiene a alguien cerca
+                    particle.move(closest);
+                }
             }
 
             // maso como seria
@@ -95,8 +96,8 @@ public class SimulationController {
     // puede ser el que querramos.
     // un tiempo/un porcentaje de zombies/etc
     public boolean cutCondition(int countZombies) {
-        return true;
-        //return ((countZombies/N)>=0.75? true : false);
+        //return true;
+        return ((countZombies/N)>=0.75? true : false);
     }
 
     public boolean particleOverlaps(double x, double y) {
