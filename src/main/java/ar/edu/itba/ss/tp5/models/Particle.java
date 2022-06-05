@@ -1,7 +1,6 @@
 package ar.edu.itba.ss.tp5.models;
 
 import ar.edu.itba.ss.tp5.simulation.Dynamics;
-import ar.edu.itba.ss.tp5.simulation.SimulationController;
 import javafx.util.Pair;
 
 import java.util.*;
@@ -111,16 +110,8 @@ public class Particle {
         isHuman = human;
     }
 
-    public void setXVel(double xVel) {
-        this.xVel = xVel;
-    }
-
     public double getYVel() {
         return yVel;
-    }
-
-    public void setYVel(double yVel) {
-        this.yVel = yVel;
     }
 
     public double getRadius() {
@@ -133,6 +124,10 @@ public class Particle {
 
     public double getColor() {
         return color;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public boolean isHuman() {
@@ -187,6 +182,10 @@ public class Particle {
         this.xVel = this.vel * Math.cos(angleX);
         this.yVel = this.vel * Math.sin(angleY);
         Dynamics.reRoute(particle);
+        if (this.isZombie()){
+            this.xPos = this.xPos + this.xVel * deltaT;
+            this.yPos = this.yPos + this.yVel * deltaT;
+        }
     }
 
     private void persecuteHuman(Particle human) {
@@ -212,14 +211,14 @@ public class Particle {
         human.xVel = Math.cos(secondAngleInRadians) * human.vel;
         human.yVel = Math.sin(secondAngleInRadians) * human.vel;
         if (firstHumanAngle == 0){ // <-- H T -->
-            this.originalTarget = new Pair(this.xPos + 2.0, this.yPos);
+            this.originalTarget = new Pair<>(this.xPos + 2.0, this.yPos);
             this.temporalTarget = this.originalTarget;
-            human.originalTarget = new Pair(this.xPos - 2.0, this.yPos);
+            human.originalTarget = new Pair<>(this.xPos - 2.0, this.yPos);
             human.temporalTarget = human.originalTarget;
         } else {                   // <-- T H -->
-            this.originalTarget = new Pair(this.xPos - 2.0, this.yPos);
+            this.originalTarget = new Pair<>(this.xPos - 2.0, this.yPos);
             this.temporalTarget = this.originalTarget;
-            human.originalTarget = new Pair(this.xPos + 2.0, this.yPos);
+            human.originalTarget = new Pair<>(this.xPos + 2.0, this.yPos);
             human.temporalTarget = human.originalTarget;
         }
     }
@@ -229,16 +228,16 @@ public class Particle {
             if (Math.abs(wall.getYPos() - this.getYPos()) < interactionDistance / 2) { // y tambien verticalmente
                 this.xVel = -this.xVel; // sale para el otro lado
                 this.yVel = -this.yVel;
-                this.originalTarget = new Pair(this.xPos + 2 * (this.xVel/Math.abs(this.xVel)), this.yPos + 2 * (this.yVel/Math.abs(this.yVel)));
+                this.originalTarget = new Pair<>(this.xPos + 2 * (this.xVel/Math.abs(this.xVel)), this.yPos + 2 * (this.yVel/Math.abs(this.yVel)));
                 this.temporalTarget = this.originalTarget;
             } else { //solo horizontal
                 this.xVel = -this.xVel; //solo cambia su velocidad en x
-                this.originalTarget = new Pair(this.xPos + (2 * (this.xVel/Math.abs(this.xVel))), this.yPos);
+                this.originalTarget = new Pair<>(this.xPos + (2 * (this.xVel/Math.abs(this.xVel))), this.yPos);
                 this.temporalTarget = this.originalTarget;
             }
         } else if (Math.abs(wall.getYPos() - this.getYPos()) < interactionDistance / 2) { //solo vertical
             this.yVel = -this.yVel; //solo cambia su velocidad en y
-            this.originalTarget = new Pair(this.xPos, this.yPos + (2 * (this.yVel/Math.abs(this.yVel))));
+            this.originalTarget = new Pair<>(this.xPos, this.yPos + (2 * (this.yVel/Math.abs(this.yVel))));
             this.temporalTarget = this.originalTarget;
         }
     }
@@ -258,7 +257,7 @@ public class Particle {
                     distance = aux;
                 }
             }
-            this.temporalTarget = new Pair(this.xPos + 2 * (closestZombie.getXVel()/Math.abs(closestZombie.getXVel())), this.yPos + 2 * (closestZombie.getYVel()/Math.abs(closestZombie.getYVel())));
+            this.temporalTarget = new Pair<>(this.xPos + 2 * (closestZombie.getXVel()/Math.abs(closestZombie.getXVel())), this.yPos + 2 * (closestZombie.getYVel()/Math.abs(closestZombie.getYVel())));
             if (obstacleDistance > humanInteractionDistance) {
                 setNewDirection(closestZombie); //solo escapar del zombie
             } else {
@@ -294,6 +293,7 @@ public class Particle {
             }
         } else {
             if (this.isZombie()) {
+                System.out.println("zombie");
                 if (distance > interactionDistance || particle.isZombie() || particle.isWall()) {
                     this.vel = zombieVelocitySlow;
                     persecuteRandomHuman();
@@ -310,7 +310,7 @@ public class Particle {
                     List<Particle> dangerousZombies = getZombiesPersecutingHuman(this);
                     avoidZombies(dangerousZombies, particle, distance);
                 } else if (distance > humanInteractionDistance) { //si no tiene nada cerca
-                    //setVelocityToZero(this);
+                    setVelocityToZero(this);
                 } else if (distance == 0) {     //si se choco
                     if (particle.isZombie()) {          //si choco con un zombie
                         this.setWaiting(true);

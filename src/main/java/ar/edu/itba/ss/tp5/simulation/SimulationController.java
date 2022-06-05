@@ -9,16 +9,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static ar.edu.itba.ss.tp5.App.N;
+
 public class SimulationController {
 
     static List<Particle> particles = new ArrayList<>();
     FilePositionGenerator filePositionGenerator;
-    int N;
+    public static int walls = 0;
     int circleRadius = 11;
     double velZ;
     double velH = 4;
     public static int countZombies = 1;
-    public static double deltaT;
+    public static double deltaT = 0.1;
     double t = 0;
 
     public static double interactionDistance = 4;
@@ -32,13 +34,17 @@ public class SimulationController {
     public static double maxParticleRadius = 0.32;
     public static double radiusStep = 0.05;
 
+    public double zombieColor = 1;
+    public double humanColor = 0.5;
+    public double wallColor = 0.75;
+
+    public double count = 0;
+
 
     public static Map<Particle, Particle> persecutions = new HashMap<>();
 
-    public SimulationController(int N, double velZ, double deltaT, FilePositionGenerator filePositionGenerator) {
-        this.N = N;
+    public SimulationController(double velZ, FilePositionGenerator filePositionGenerator) {
         this.velZ = velZ;
-        this.deltaT = deltaT;
         this.filePositionGenerator = filePositionGenerator;
         generateMap();
     }
@@ -53,29 +59,34 @@ public class SimulationController {
             randomX = circleRadius + randomRadius * Math.cos(randomAngle);
             randomY = circleRadius + randomRadius * Math.sin(randomAngle);
             if (!particleOverlaps(randomX, randomY)) {
-                particles.add(new Particle(particles.size(), randomX, randomY, 0, minParticleRadius, 0.5, true, false));
+                particles.add(new Particle(particles.size(), randomX, randomY, 0, minParticleRadius, humanColor, true, false));
             }
         }
 
         // agrega al zombie
-        particles.add(new Particle(particles.size(), circleRadius, circleRadius, zombieVelocitySlow, minParticleRadius, 1, false, false));
+        particles.add(new Particle(particles.size(), circleRadius, circleRadius, zombieVelocitySlow, minParticleRadius, zombieColor, false, false));
 
         // agrega las paredes
         for (double j = 0; j < 360.0; j += 0.1) {
-            particles.add(new Particle(circleRadius + circleRadius * Math.cos(j), circleRadius + circleRadius * Math.sin(j), 0, minParticleRadius, 0.75, true, true));
+            walls += 1;
+            particles.add(new Particle(circleRadius + circleRadius * Math.cos(j), circleRadius + circleRadius * Math.sin(j), 0, minParticleRadius, wallColor, true, true));
         }
+        filePositionGenerator.addWalls(particles);
         filePositionGenerator.addParticles(particles);
     }
 
     public void simulate() {
-        Particle closestParticle;
         while (!cutCondition(countZombies)) {
-
             for (Particle particle : particles) {
-                if(!particle.isWall()){
-                    Pair<Double, Particle> closest = checkProximity(particle); //se fija si tiene a alguien cerca
-                    particle.move(closest);
+                if (particle.isWall()) {
+                    break;
                 }
+                Pair<Double, Particle> closest = checkProximity(particle); //se fija si tiene a alguien cerca
+                particle.move(closest);
+                if (particle.isWaiting())
+                    System.out.printf("%d %b %b\n", particle.getId(), particle.isZombie(), particle.isWaiting());
+
+                filePositionGenerator.addParticles(particles);
             }
 
             // maso como seria
@@ -97,7 +108,10 @@ public class SimulationController {
     // un tiempo/un porcentaje de zombies/etc
     public boolean cutCondition(int countZombies) {
         //return true;
-        return ((countZombies/N)>=0.75? true : false);
+//        return (((double) countZombies / N) >= 0.75);
+        count += 1;
+        System.out.println(count);
+        return count > 10;
     }
 
     public boolean particleOverlaps(double x, double y) {
@@ -136,7 +150,7 @@ public class SimulationController {
         for (Particle p : particles) {
             if (p.isHuman()) humans.add(p);
         }
-        int rand = (int) getRandom(0, humans.size());
+        int rand = (int) getRandom(0, humans.size() - 1);
         return humans.get(rand);
     }
 }

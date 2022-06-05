@@ -46,9 +46,9 @@ public class Dynamics {
 
         //setear target temporal
         if (particle.isVertical){
-            particle.temporalTarget = new Pair(particle.getXPos() - 4, particle.getYPos()+Math.sin(115 * Math.PI / 180.0));
+            particle.temporalTarget = new Pair<>(particle.getXPos() - 4, particle.getYPos()+Math.sin(115 * Math.PI / 180.0));
         } else {
-            particle.temporalTarget = new Pair(particle.getXPos()+Math.cos(205 * Math.PI / 180.0), particle.getYPos() - 4);
+            particle.temporalTarget = new Pair<>(particle.getXPos()+Math.cos(205 * Math.PI / 180.0), particle.getYPos() - 4);
         }
 
     }

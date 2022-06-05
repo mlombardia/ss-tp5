@@ -3,16 +3,14 @@ package ar.edu.itba.ss.tp5;
 import ar.edu.itba.ss.tp5.models.FilePositionGenerator;
 import ar.edu.itba.ss.tp5.simulation.SimulationController;
 
-public class App 
-{
-    public static void main( String[] args )
-    {
-        int N = 200;
-        int velZ = 3;
-        double deltaT = 0.1;
-        FilePositionGenerator filePositionGenerator = new FilePositionGenerator();
-        SimulationController controller = new SimulationController(N, velZ, deltaT, filePositionGenerator);
+public class App {
+    public static int N = 200;
 
+    public static void main(String[] args) {
+        int velZ = 3;
+        FilePositionGenerator filePositionGenerator = new FilePositionGenerator();
+        SimulationController controller = new SimulationController(velZ, filePositionGenerator);
+        controller.simulate();
         filePositionGenerator.closeFiles();
     }
 
