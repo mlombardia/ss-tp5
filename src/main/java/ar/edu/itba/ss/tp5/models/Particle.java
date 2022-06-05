@@ -162,6 +162,10 @@ public class Particle {
         isWaiting = waiting;
     }
 
+    public boolean isOutOfBounds(){
+        return Math.sqrt(Math.pow(this.getXPos() - circleRadius, 2) + Math.pow(this.getYPos() - circleRadius, 2)) > circleRadius;
+    }
+
 
     @Override
     public boolean equals(Object o) {

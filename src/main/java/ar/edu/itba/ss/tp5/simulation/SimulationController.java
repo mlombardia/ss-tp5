@@ -16,11 +16,11 @@ public class SimulationController {
     static List<Particle> particles = new ArrayList<>();
     FilePositionGenerator filePositionGenerator;
     public static int walls = 0;
-    int circleRadius = 11;
+    public static int circleRadius = 11;
     double velZ;
     double velH = 4;
     public static int countZombies = 1;
-    public static double deltaT = 0.1;
+    public static double deltaT = 0.05;
     double t = 0;
 
     public static double interactionDistance = 4;
@@ -85,9 +85,11 @@ public class SimulationController {
                 particle.move(closest);
                 if (particle.isWaiting())
                     System.out.printf("%d %b %b\n", particle.getId(), particle.isZombie(), particle.isWaiting());
-
-                filePositionGenerator.addParticles(particles);
+                if (particle.isOutOfBounds()){
+                    System.out.println("out");
+                }
             }
+            filePositionGenerator.addParticles(particles);
 
             // maso como seria
             // zombies recorren de manera random buscando humanos a velocidad baja (0.3m/s)
