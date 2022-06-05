@@ -20,18 +20,21 @@ public class Dynamics {
 
     public static void cpm(Particle particle) {
 
-        if (particle.isAtContactWithHuman()){
-            particle.setVel(vdMax);
-            particle.setRadius(minParticleRadius);
-            particle.setXPos(particle.getXPos() + vdMax * deltaT);
-            particle.setYPos(particle.getYPos() + vdMax * deltaT);
-        } else {
-            particle.setVel(vdMax * Math.pow((particle.getRadius()-minParticleRadius)/(maxParticleRadius-minParticleRadius), beta));
-            if (particle.getRadius() < maxParticleRadius){
-                particle.setRadius(particle.getRadius() + maxParticleRadius / (tau/deltaT)); // TODO revisar porque creo que no deberia ser deltaT y calcularlo
+        if (particle.isHuman() && !particle.isWaiting()) {      // si es un humano y no lo estan comiendo
+            if (particle.isAtContactWithHuman()){
+                particle.setVel(vdMax);
+                particle.setRadius(minParticleRadius);
+                particle.setXPos(particle.getXPos() + vdMax * deltaT);
+                particle.setYPos(particle.getYPos() + vdMax * deltaT);
+                particle.setIsAtContactWithHuman(false);
+            } else {
+                particle.setVel(vdMax * Math.pow((particle.getRadius()-minParticleRadius)/(maxParticleRadius-minParticleRadius), beta));
+                if (particle.getRadius() < maxParticleRadius){
+                    particle.setRadius(particle.getRadius() + maxParticleRadius / (tau/deltaT)); // TODO revisar porque creo que no deberia ser deltaT y calcularlo
+                }
+                particle.setXPos(particle.getXPos() + particle.getVel() * deltaT);
+                particle.setYPos(particle.getYPos() + particle.getVel() * deltaT);
             }
-            particle.setXPos(particle.getXPos() + particle.getVel() * deltaT);
-            particle.setYPos(particle.getYPos() + particle.getVel() * deltaT);
         }
     }
 

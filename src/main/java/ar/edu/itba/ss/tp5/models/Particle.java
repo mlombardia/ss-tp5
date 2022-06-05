@@ -18,6 +18,7 @@ public class Particle {
     private final double color;
     private boolean isHuman;
     private final boolean isWall;
+
     private boolean isAtContactWithHuman;
 
     public Stack<Pair<Double, Double>> targets;
@@ -44,6 +45,7 @@ public class Particle {
         this.yVel = Math.sin(angleInRadians) * vel;
         this.targets = new Stack<Pair<Double, Double>>();
         this.isVertical = false;
+        this.isAtContactWithHuman = false;
     }
 
     public Particle(double xPos, double yPos, double vel, double radius, double color, boolean isHuman, boolean isWall) {
@@ -58,6 +60,7 @@ public class Particle {
         double angleInRadians = angle * Math.PI / 180.0;
         this.xVel = Math.cos(angleInRadians) * vel;
         this.yVel = Math.sin(angleInRadians) * vel;
+        this.isAtContactWithHuman = false;
     }
 
     public double getXPos() {
@@ -210,7 +213,7 @@ public class Particle {
             if (Math.abs(wall.getYPos() - this.getYPos()) < interactionDistance / 2) { // y tambien verticalmente
                 this.xVel = -this.xVel; // sale para el otro lado
                 this.yVel = -this.yVel;
-                this.targets.push(new Pair(this.xPos + 4 * (this.xVel/Math.abs(this.xVel)) * Math.cos(270 * 180 * (this.xVel/Math.abs(this.xVel))), this.yPos + 4 * (this.yVel/Math.abs(this.yVel)) * Math.cos(270 * 180 * (this.yVel/Math.abs(this.yVel))))) //TODO TBD averiguar MCU
+                this.targets.push(new Pair(this.xPos + 4 * (this.xVel/Math.abs(this.xVel)) * Math.cos(270 * 180 * (this.xVel/Math.abs(this.xVel))), this.yPos + 4 * (this.yVel/Math.abs(this.yVel)) * Math.cos(270 * 180 * (this.yVel/Math.abs(this.yVel))))); //TODO TBD averiguar MCU
             } else { //solo horizontal
                 this.xVel = -this.xVel; //solo cambia su velocidad en x
                 this.targets.push(new Pair(this.xPos + (4 * (this.xVel/Math.abs(this.xVel))), this.yPos));
@@ -271,9 +274,6 @@ public class Particle {
                 persecuteRandomHuman();
             }
         } else {
-//            if (this.getRadius() < maxParticleRadius) {
-//                this.setRadius(this.getRadius() + radiusStep);
-//            }
             if (this.isZombie()) {
                 if (distance > interactionDistance || particle.isZombie() || particle.isWall()) {
                     //this.vel = zombieVelocitySlow;
@@ -293,9 +293,6 @@ public class Particle {
                 } else if (distance > humanInteractionDistance) { //si no tiene nada cerca
                     //setVelocityToZero(this);
                 } else if (distance == 0) {     //si se choco
-                    setVelocityToZero(this);
-                    setVelocityToZero(particle);
-                    this.setRadius(minParticleRadius);      //aca poner cpm
                     if (particle.isZombie()) {          //si choco con un zombie
                         this.setWaiting(true);
                         this.setCollisionTime(System.currentTimeMillis());
@@ -313,7 +310,7 @@ public class Particle {
                 }
             }
         }
-
+        Dynamics.cpm(this);
     }
 
 }
