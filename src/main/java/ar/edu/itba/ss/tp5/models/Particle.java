@@ -18,10 +18,14 @@ public class Particle {
     private final double color;
     private boolean isHuman;
     private final boolean isWall;
-
     private boolean isAtContactWithHuman;
 
-    public Stack<Pair<Double, Double>> targets;
+    public Pair<Double, Double> currentTarget;
+
+    public Pair<Double, Double> originalTarget;
+
+    public Pair<Double, Double> temporalTarget;
+
     private double radius;
 
     private long collisionTime = 0;
@@ -43,9 +47,12 @@ public class Particle {
         double angleInRadians = angle * Math.PI / 180.0;
         this.xVel = Math.cos(angleInRadians) * vel;
         this.yVel = Math.sin(angleInRadians) * vel;
-        this.targets = new Stack<Pair<Double, Double>>();
+        this.originalTarget = new Pair<>(xPos, yPos);
+        this.currentTarget = originalTarget;
+        this.temporalTarget = originalTarget;
         this.isVertical = false;
         this.isAtContactWithHuman = false;
+        this.currentTarget = null;
     }
 
     public Particle(double xPos, double yPos, double vel, double radius, double color, boolean isHuman, boolean isWall) {
@@ -60,7 +67,11 @@ public class Particle {
         double angleInRadians = angle * Math.PI / 180.0;
         this.xVel = Math.cos(angleInRadians) * vel;
         this.yVel = Math.sin(angleInRadians) * vel;
+        this.originalTarget = new Pair<>(xPos, yPos);
+        this.currentTarget = originalTarget;
+        this.temporalTarget = originalTarget;
         this.isAtContactWithHuman = false;
+        this.currentTarget = null;
     }
 
     public double getXPos() {
@@ -200,11 +211,15 @@ public class Particle {
         human.xVel = Math.cos(secondAngleInRadians) * human.vel;
         human.yVel = Math.sin(secondAngleInRadians) * human.vel;
         if (firstHumanAngle == 0){ // <-- H T -->
-            this.targets.push(new Pair(this.xPos + 4.0, this.yPos));
-            human.targets.push(new Pair(this.xPos - 4.0, this.yPos));
+            this.originalTarget = new Pair(this.xPos + 2.0, this.yPos);
+            this.temporalTarget = this.originalTarget;
+            human.originalTarget = new Pair(this.xPos - 2.0, this.yPos);
+            human.temporalTarget = human.originalTarget;
         } else {                   // <-- T H -->
-            this.targets.push(new Pair(this.xPos - 4.0, this.yPos));
-            human.targets.push(new Pair(this.xPos + 4.0, this.yPos));
+            this.originalTarget = new Pair(this.xPos - 2.0, this.yPos);
+            this.temporalTarget = this.originalTarget;
+            human.originalTarget = new Pair(this.xPos + 2.0, this.yPos);
+            human.temporalTarget = human.originalTarget;
         }
     }
 
@@ -213,14 +228,17 @@ public class Particle {
             if (Math.abs(wall.getYPos() - this.getYPos()) < interactionDistance / 2) { // y tambien verticalmente
                 this.xVel = -this.xVel; // sale para el otro lado
                 this.yVel = -this.yVel;
-                this.targets.push(new Pair(this.xPos + 4 * (this.xVel/Math.abs(this.xVel)), this.yPos + 4 * (this.yVel/Math.abs(this.yVel))));
+                this.originalTarget = new Pair(this.xPos + 2 * (this.xVel/Math.abs(this.xVel)), this.yPos + 2 * (this.yVel/Math.abs(this.yVel)));
+                this.temporalTarget = this.originalTarget;
             } else { //solo horizontal
                 this.xVel = -this.xVel; //solo cambia su velocidad en x
-                this.targets.push(new Pair(this.xPos + (4 * (this.xVel/Math.abs(this.xVel))), this.yPos));
+                this.originalTarget = new Pair(this.xPos + (2 * (this.xVel/Math.abs(this.xVel))), this.yPos);
+                this.temporalTarget = this.originalTarget;
             }
         } else if (Math.abs(wall.getYPos() - this.getYPos()) < interactionDistance / 2) { //solo vertical
             this.yVel = -this.yVel; //solo cambia su velocidad en y
-            this.targets.push(new Pair(this.xPos, this.yPos + (4 * (this.yVel/Math.abs(this.yVel)))));
+            this.originalTarget = new Pair(this.xPos, this.yPos + (2 * (this.yVel/Math.abs(this.yVel))));
+            this.temporalTarget = this.originalTarget;
         }
     }
 
@@ -239,12 +257,11 @@ public class Particle {
                     distance = aux;
                 }
             }
-
+            this.temporalTarget = new Pair(this.xPos + 2 * (closestZombie.getXVel()/Math.abs(closestZombie.getXVel())), this.yPos + 2 * (closestZombie.getYVel()/Math.abs(closestZombie.getYVel())));
             if (obstacleDistance > humanInteractionDistance) {
                 setNewDirection(closestZombie); //solo escapar del zombie
             } else {
                 Dynamics.reRoute(this);
-                Pair<Double,Double> newTarget = this.targets.pop(); // levantamos el nuevo target
                 //TODO setTemporalTarget //evitar al zombie y la pared/humano
             }
             //play with the obstacle and the closest zombie
@@ -310,7 +327,8 @@ public class Particle {
                 }
             }
         }
-        Dynamics.cpm(this);
+        this.currentTarget = Dynamics.checkStatus(this);
+        Dynamics.cpm(this, this.currentTarget);
     }
 
 }
