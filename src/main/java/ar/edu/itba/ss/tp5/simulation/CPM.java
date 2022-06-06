@@ -76,6 +76,8 @@ public class CPM {
                     particle.setXVel(0);
                     particle.setYVel(0);
                     targets.remove(particle);
+                    escape(particle, closestWall[0], closestWall[1], !particle.isHuman());
+                    saveDirections(particle);
                 }
             }
             updatePositions();
@@ -87,15 +89,24 @@ public class CPM {
         List<Particle> toRemove = new ArrayList<>();
         for (Particle p : transformations.keySet()) {
             Particle particle = transformations.get(p);
-            if (p.getBiteTime() != NOT_BITTEN && System.currentTimeMillis() - p.getBiteTime() > 10) {
-                if (p.isHuman()) zombies++;
-                p.setHuman(false);
+            if (p.getBiteTime() != NOT_BITTEN && System.currentTimeMillis() - p.getBiteTime() > 7000) {
+                double random = getRandom(0, 100);
+                if (random / 100 <= RECOVERY_POSSIBILITY) {
+                    if (!p.isHuman()) zombies--;
+                    p.setHuman(true);
+                    if (!particle.isHuman()) zombies--;
+                    particle.setHuman(true);
+                    toRemove.add(particle);
+                    particle.setBiteTime(NOT_BITTEN);
+                } else {
+                    if (p.isHuman()) zombies++;
+                    p.setHuman(false);
+                }
                 p.setBiteTime(NOT_BITTEN);
 //                transformations.remove(p);
                 toRemove.add(p);
                 targets.remove(p);
-                escape(p, particle.getXPos(), particle.getYPos(), true);
-                saveDirections(particle);
+                follow(p, circleRadius, circleRadius);
                 //move
             }
         }
@@ -131,16 +142,21 @@ public class CPM {
 
     private static void handleHuman(Particle particle, double[] closestParticle, double[] closestWall) {
         if (closestParticle[1] < closestWall[2]) {
-            if (closestParticle[1] > humanInteractionDistance) {
-                //stand still
+            Particle aux = particles.get((int) closestParticle[0]);
+            if (!aux.isHuman()) {
+                escape(particle, aux.getXPos(), aux.getYPos(), !particle.isHuman());
+                saveDirections(particle);
+            } else if (closestParticle[1] > humanInteractionDistance) {
+                particle.setXVel(0);
+                particle.setYVel(0);
             } else {
-                Particle aux = particles.get((int) closestParticle[0]);
                 escape(particle, aux.getXPos(), aux.getYPos(), !particle.isHuman());
                 saveDirections(particle);
             }
         } else {
             if (closestWall[2] > humanInteractionDistance) {
-                //stand still
+                particle.setXVel(0);
+                particle.setYVel(0);
             } else {
                 escape(particle, closestWall[0], closestWall[1], !particle.isHuman());
                 saveDirections(particle);
