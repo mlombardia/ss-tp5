@@ -3,10 +3,6 @@ package ar.edu.itba.ss.tp5;
 import ar.edu.itba.ss.tp5.models.FilePositionGenerator;
 import ar.edu.itba.ss.tp5.simulation.SimulationController;
 
-/**
- * Hello world!
- *
- */
 public class App {
     public static int N = 10;
     public static int circleRadius = 11;

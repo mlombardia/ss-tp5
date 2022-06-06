@@ -26,7 +26,7 @@ public class SimulationController {
     public static double deltaT = rMin / (2 * Math.max(vdMax, ve));
     public static double deltaR = rMax / (tau / deltaT);
 
-    public static double humanInteractionDistance = 2;
+    public static double humanInteractionDistance =4;
     public static double zombieInteractionDistance = 4;
 
     FilePositionGenerator filePositionGenerator;
