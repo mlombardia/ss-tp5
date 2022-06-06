@@ -84,6 +84,7 @@ public class Particle {
     }
 
     public void setHuman(boolean human) {
+        if (!human) setColor(zombieColor);
         isHuman = human;
     }
 

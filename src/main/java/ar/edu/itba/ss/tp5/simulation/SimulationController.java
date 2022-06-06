@@ -31,7 +31,7 @@ public class SimulationController {
 
     FilePositionGenerator filePositionGenerator;
 
-    private double zombieColor = 1;
+    public static double zombieColor = 1;
     private double humanColor = 0.5;
     private double wallColor = 0.75;
 

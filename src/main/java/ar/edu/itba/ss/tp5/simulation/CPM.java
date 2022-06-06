@@ -13,6 +13,8 @@ import static ar.edu.itba.ss.tp5.simulation.SimulationController.*;
 public class CPM {
     private static Map<Particle, Double[]> directions = new HashMap<>();
     private static Map<Particle, Particle> targets = new HashMap<>();
+    private static Map<Particle, Particle> crashes = new HashMap<>();
+
 
     public static void run(FilePositionGenerator filePositionGenerator) {
         for (int i = 0; i < 5000; i++) {
@@ -21,7 +23,7 @@ public class CPM {
                 checkBites(particle);
                 double[] closestParticle = getClosestParticle(particle);
                 double[] closestWall = getClosestWall(particle);
-                if (closestParticle[1] > particle.getRadius() && closestWall[2] > particle.getRadius() && particle.getRadius() < rMax) {
+                if (closestParticle[1] > 0 && closestWall[2] > 0 && particle.getRadius() < rMax) {
                     particle.setRadius(particle.getRadius() + deltaR);
                 }
                 if (crashed(particle, closestParticle, closestWall)) {
@@ -30,10 +32,14 @@ public class CPM {
                     particle.setYVel(0);
                     if (!particles.get((int) closestParticle[0]).isHuman()) { //particle and zombie
                         particle.setBiteTime(System.currentTimeMillis());
-                    }else{ //
-                        if (closestParticle[1] - particles.get((int) closestParticle[0]).getRadius() < particle.getRadius()) escape(particle,particles.get((int) closestParticle[0]).getXPos(), particles.get((int) closestParticle[0]).getYPos(), !particles.get((int) closestParticle[0]).isHuman() );
-                        else escape(particle, closestWall[0], closestWall[1], !particle.isHuman());
+                        crashes.put(particle, particles.get((int) closestParticle[0]));
+                        particle.setXVel(0);
+                        particle.setYVel(0);
 
+                    } else { //
+                        if (closestParticle[1] - particles.get((int) closestParticle[0]).getRadius() < particle.getRadius())
+                            escape(particle, particles.get((int) closestParticle[0]).getXPos(), particles.get((int) closestParticle[0]).getYPos(), !particles.get((int) closestParticle[0]).isHuman());
+                        else escape(particle, closestWall[0], closestWall[1], !particle.isHuman());
                     }
                 } else if (!particle.isHuman()) { //zombie
                     handleZombie(particle, closestParticle, closestWall);
@@ -44,7 +50,6 @@ public class CPM {
                     particle.setXVel(0);
                     particle.setYVel(0);
                     targets.remove(particle);
-                    System.out.println("here");
                 }
             }
             updatePositions();
@@ -52,11 +57,28 @@ public class CPM {
         }
     }
 
+    private static void moveAfterCrash(Particle particle) {
+        Particle aux = crashes.get(particle);
+        double angle = getRandom(0, 360);
+        double angleInRadians = angle * Math.PI / 180.0;
+        particle.setXVel(Math.cos(angleInRadians) * vzMin);
+        particle.setYVel(Math.sin(angleInRadians) * vzMin);
+        angle = getRandom(0, 360);
+        angleInRadians = angle * Math.PI / 180.0;
+        aux.setXVel(Math.cos(angleInRadians) * vzMin);
+        aux.setYVel(Math.sin(angleInRadians) * vzMin);
+        escape(particle, aux.getXPos(), aux.getYPos(), !particle.isHuman());
+        escape(aux, particle.getXPos(), particle.getYPos(), !aux.isHuman());
+    }
+
     private static void checkBites(Particle particle) {
         if (particle.getBiteTime() != NOT_BITTEN) {
-            if (System.currentTimeMillis() - particle.getBiteTime() >= 7000) {
+            if (System.currentTimeMillis() - particle.getBiteTime() >= 10) {
                 particle.setHuman(false);
                 particle.setBiteTime(NOT_BITTEN);
+                if (crashes.containsKey(particle)) {
+                    moveAfterCrash(particle);
+                }
             }
         }
     }
@@ -69,7 +91,7 @@ public class CPM {
         Particle human;
         double attackAttempts = 50;
         particle.setAttackAttempts(particle.getAttackAttempts() - 1);
-        if ((closestParticle[1] <= zombieInteractionDistance) && particle.getAttackAttempts() <= 0) {
+        if (particles.get((int) closestParticle[0]).isHuman() && (closestParticle[1] <= zombieInteractionDistance) && particle.getAttackAttempts() <= 0) {
             human = particles.get((int) closestParticle[0]);
             particle.setAttackAttempts(attackAttempts);
         } else {
@@ -106,15 +128,13 @@ public class CPM {
     }
 
     private static void follow(Particle particle, double x, double y) {
-        double deltaX = particle.getXPos() - x - (2 * particle.getRadius());
-        double deltaY = particle.getYPos() - y - (2 * particle.getRadius());
+        double deltaX = particle.getXPos() - x;
+        double deltaY = particle.getYPos() - y;
         double angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
         if (angle < 0) angle += 2 * Math.PI;
         particle.setXVel(vzMax * Math.cos(angle));
         particle.setYVel(vzMax * Math.sin(angle));
         saveDirections(particle);
-        particle.setXPos(particle.getXPos() + particle.getXVel());
-        particle.setYPos(particle.getYPos() + particle.getYVel());
     }
 
     private static void saveDirections(Particle particle) {
@@ -157,11 +177,11 @@ public class CPM {
     }
 
     public static double calculateDistanceParticle(Particle p1, Particle p2) {
-        return calculateDistance((p1.getXPos() - p1.getRadius()), (p2.getXPos() - p2.getRadius()), (p1.getYPos() - p1.getRadius()), (p2.getYPos() - p2.getRadius()));
+        return calculateDistance((p1.getXPos()), (p2.getXPos()), (p1.getYPos()), (p2.getYPos()));
     }
 
     public static double calculateDistanceWall(Particle p1, Wall wall) {
-        return calculateDistance((p1.getXPos() - p1.getRadius()), (wall.getXPos() - wall.getRadius()), (p1.getYPos() - p1.getRadius()), (wall.getYPos() - wall.getRadius()));
+        return calculateDistance((p1.getXPos()), (wall.getXPos()), (p1.getYPos()), (wall.getYPos()));
 
     }
 
@@ -197,7 +217,6 @@ public class CPM {
             if (p.isHuman()) humans.add(p);
         }
         int rand = (int) getRandom(0, humans.size() - 1);
-        System.out.println(rand);
         return humans.get(rand);
     }
 }
