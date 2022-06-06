@@ -34,6 +34,8 @@ public class Particle {
 
     public boolean isVertical;
 
+    private boolean isTargeting = false;
+
     public Particle(int id, double xPos, double yPos, double vel, double radius, double color, boolean isHuman, boolean isWall) {
         this.id = id;
         this.xPos = xPos;
@@ -162,7 +164,7 @@ public class Particle {
         isWaiting = waiting;
     }
 
-    public boolean isOutOfBounds(){
+    public boolean isOutOfBounds() {
         return Math.sqrt(Math.pow(this.getXPos() - circleRadius, 2) + Math.pow(this.getYPos() - circleRadius, 2)) > circleRadius;
     }
 
@@ -181,18 +183,15 @@ public class Particle {
     }
 
     private void setNewDirection(Particle particle) {
-        double angleX = Math.acos(particle.getXVel() / particle.getVel());
-        double angleY = Math.asin(particle.getYVel() / particle.getVel());
-        if (particle.getVel() == 0) {
-            angleX = 0;
-            angleY = 0;
-        }
-        this.xVel = this.vel * Math.cos(angleX);
-        this.yVel = this.vel * Math.sin(angleY);
-        Dynamics.reRoute(particle);
+        double angle = Math.atan2(particle.getYPos() - this.getYPos(), particle.getXPos() - this.getXPos()) * (180 / Math.PI);
+//        double angleX = Math.acos(particle.getXVel() / particle.getVel());
+//        double angleY = Math.asin(particle.getYVel() / particle.getVel());
+        this.xVel = this.vel * Math.cos(angle);
+        this.yVel = this.vel * Math.sin(angle);
+//        Dynamics.reRoute(particle);
         if (this.isZombie()) {
-            this.xPos = this.xPos + this.xVel * deltaT;
-            this.yPos = this.yPos + this.yVel * deltaT;
+            this.xPos += this.xVel * deltaT;
+            this.yPos += this.yVel * deltaT;
         }
     }
 
@@ -280,6 +279,7 @@ public class Particle {
     //LO EMPIEZA A PERSEGUIR
     private void persecuteRandomHuman() {
         Particle p = getRandomTarget(); //busca un humano random para perseguir
+        persecutions.put(this, p); //zombie, human
         persecuteHuman(p);
     }
 
@@ -300,14 +300,19 @@ public class Particle {
                 persecuteRandomHuman();
             }
         } else {
+            persecutions.keySet().forEach(k-> System.out.println("\nkey val" +k+" "+ persecutions.get(k)));
             if (this.isZombie()) {
                 if (distance > interactionDistance || particle.isZombie() || particle.isWall()) {
-                    this.vel = zombieVelocitySlow;
-                    persecuteRandomHuman();
-                    persecutions.remove(this);
+                    if (!isTargeting) {
+                        this.vel = zombieVelocitySlow;
+                        persecuteRandomHuman();
+                    }
                 } else if (distance == 0) {               //si choco
                     this.setWaiting(true);
+                    persecutions.remove(this);
+                    this.isTargeting = false;
                 } else {            // tiene a un humano cerca
+                    this.isTargeting = true;
                     this.vel = persecutionZombieVelocity;
                     persecutions.put(this, particle); //zombie, human
                     persecuteHuman(particle);
@@ -317,7 +322,7 @@ public class Particle {
                     List<Particle> dangerousZombies = getZombiesPersecutingHuman(this);
                     avoidZombies(dangerousZombies, particle, distance);
                 } else if (distance > humanInteractionDistance) { //si no tiene nada cerca
-//                    setVelocityToZero(this);
+                    setVelocityToZero(this);
                 } else if (distance == 0) {     //si se choco
                     if (particle.isZombie()) {          //si choco con un zombie
                         this.setWaiting(true);
@@ -335,8 +340,12 @@ public class Particle {
                 }
             }
         }
-        this.currentTarget = Dynamics.checkStatus(this);
-        Dynamics.cpm(this, this.currentTarget);
+//        this.currentTarget = Dynamics.checkStatus(this);
+//        Dynamics.cpm(this, this.currentTarget);
     }
 
+    @Override
+    public String toString() {
+        return Integer.toString(id);
+    }
 }

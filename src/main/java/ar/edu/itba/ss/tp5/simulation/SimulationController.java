@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import static ar.edu.itba.ss.tp5.App.N;
+import static ar.edu.itba.ss.tp5.simulation.Dynamics.vdMax;
 
 public class SimulationController {
 
@@ -20,13 +21,12 @@ public class SimulationController {
     double velZ;
     double velH = 4;
     public static int countZombies = 1;
-    public static double deltaT = 0.05;
     double t = 0;
 
     public static double interactionDistance = 4;
 
     public static double humanInteractionDistance = 2;
-    public static double zombieVelocitySlow = 0.3;
+    public static double zombieVelocitySlow = 4;
     public static double persecutionZombieVelocity = 4;
 
     public static double minParticleRadius = 0.15;
@@ -39,6 +39,8 @@ public class SimulationController {
     public double wallColor = 0.75;
 
     public double count = 0;
+    public static double deltaT = (minParticleRadius / (2 * vdMax));
+
 
 
     public static Map<Particle, Particle> persecutions = new HashMap<>();
@@ -59,7 +61,7 @@ public class SimulationController {
             randomX = circleRadius + randomRadius * Math.cos(randomAngle);
             randomY = circleRadius + randomRadius * Math.sin(randomAngle);
             if (!particleOverlaps(randomX, randomY)) {
-                particles.add(new Particle(particles.size(), randomX, randomY, 4, minParticleRadius, humanColor, true, false));
+                particles.add(new Particle(particles.size(), randomX, randomY, vdMax, minParticleRadius, humanColor, true, false));
             }
         }
 
@@ -88,6 +90,7 @@ public class SimulationController {
                 if (particle.isOutOfBounds()){
                     System.out.println("out");
                 }
+                System.out.printf("%b %f %f\n", particle.isZombie(), particle.getXPos(), particle.getYPos());
             }
             filePositionGenerator.addParticles(particles);
 
@@ -113,7 +116,7 @@ public class SimulationController {
 //        return (((double) countZombies / N) >= 0.75);
         count += 1;
         System.out.println(count);
-        return count > 10;
+        return count >= 100;
     }
 
     public boolean particleOverlaps(double x, double y) {
@@ -127,7 +130,7 @@ public class SimulationController {
 
 
     public static double calculateDistance(Particle p1, Particle p2) {
-        return Math.sqrt(Math.pow((p1.getXPos() - p1.getRadius()) - (p2.getXPos() - p2.getRadius()), 2) - Math.pow((p1.getYPos() - p1.getRadius()) - (p2.getYPos() - p2.getRadius()), 2));
+        return Math.sqrt(Math.pow((p1.getXPos() - p1.getRadius()) - (p2.getXPos() - p2.getRadius()), 2) + Math.pow((p1.getYPos() - p1.getRadius()) - (p2.getYPos() - p2.getRadius()), 2));
     }
 
     public Pair<Double, Particle> checkProximity(Particle particle) {
@@ -153,6 +156,7 @@ public class SimulationController {
             if (p.isHuman()) humans.add(p);
         }
         int rand = (int) getRandom(0, humans.size() - 1);
+        System.out.println(rand);
         return humans.get(rand);
     }
 }

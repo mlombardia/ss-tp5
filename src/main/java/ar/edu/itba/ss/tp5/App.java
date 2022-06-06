@@ -4,7 +4,7 @@ import ar.edu.itba.ss.tp5.models.FilePositionGenerator;
 import ar.edu.itba.ss.tp5.simulation.SimulationController;
 
 public class App {
-    public static int N = 200;
+    public static int N = 2;
 
     public static void main(String[] args) {
         int velZ = 3;
