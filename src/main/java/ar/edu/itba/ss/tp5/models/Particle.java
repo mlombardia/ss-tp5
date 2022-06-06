@@ -15,11 +15,13 @@ public class Particle {
     private double vel;
     private double xVel;
     private double yVel;
-    private final double color;
+    private double color;
     private boolean isHuman;
+    private boolean isZombie;
     private final boolean isWall;
     private boolean isAtContactWithHuman;
-
+    private boolean isParticleSleeping;
+    public int hitWall = 1;
     public Pair<Double, Double> currentTarget;
 
     public Pair<Double, Double> originalTarget;
@@ -34,7 +36,7 @@ public class Particle {
 
     public boolean isVertical;
 
-    public Particle(int id, double xPos, double yPos, double vel, double radius, double color, boolean isHuman, boolean isWall) {
+    public Particle(int id, double xPos, double yPos, double vel, double radius, double color, boolean isHuman, boolean isWall, boolean isZombie) {
         this.id = id;
         this.xPos = xPos;
         this.yPos = yPos;
@@ -43,6 +45,7 @@ public class Particle {
         this.color = color;
         this.isHuman = isHuman;
         this.isWall = isWall;
+        this.isZombie = isZombie;
         double angle = getRandom(0, 360);
         double angleInRadians = angle * Math.PI / 180.0;
         this.xVel = Math.cos(angleInRadians) * vel;
@@ -52,10 +55,10 @@ public class Particle {
         this.temporalTarget = originalTarget;
         this.isVertical = false;
         this.isAtContactWithHuman = false;
-        this.currentTarget = null;
+        this.isParticleSleeping = true;
     }
 
-    public Particle(double xPos, double yPos, double vel, double radius, double color, boolean isHuman, boolean isWall) {
+    public Particle(double xPos, double yPos, double vel, double radius, double color, boolean isHuman, boolean isWall, boolean isZombie) {
         this.xPos = xPos;
         this.yPos = yPos;
         this.vel = vel;
@@ -63,6 +66,7 @@ public class Particle {
         this.color = color;
         this.isHuman = isHuman;
         this.isWall = isWall;
+        this.isZombie = isZombie;
         double angle = getRandom(0, 360);
         double angleInRadians = angle * Math.PI / 180.0;
         this.xVel = Math.cos(angleInRadians) * vel;
@@ -71,7 +75,7 @@ public class Particle {
         this.currentTarget = originalTarget;
         this.temporalTarget = originalTarget;
         this.isAtContactWithHuman = false;
-        this.currentTarget = null;
+        this.isParticleSleeping = true;
     }
 
     public double getXPos() {
@@ -91,7 +95,7 @@ public class Particle {
     }
 
     public boolean isZombie() {
-        return !this.isHuman && !this.isWall;
+        return this.isZombie;
     }
 
     public double getVel() {
@@ -108,6 +112,17 @@ public class Particle {
 
     public void setHuman(boolean human) {
         isHuman = human;
+        if(human ==false){
+            this.isZombie = true;
+        }
+    }
+
+    public void setParticleSleeping(boolean bool) {
+        isParticleSleeping = bool;
+    }
+
+    public boolean isParticleSleeping() {
+        return isParticleSleeping;
     }
 
     public double getYVel() {
@@ -131,7 +146,7 @@ public class Particle {
     }
 
     public boolean isHuman() {
-        return isHuman && !isWall;
+        return isHuman;
     }
 
     public boolean isWall() {
@@ -181,7 +196,7 @@ public class Particle {
     }
 
     private void setNewDirection(Particle particle) {
-        double angleX = Math.acos(particle.getXVel() / particle.getVel());
+        /*double angleX = Math.acos(particle.getXVel() / particle.getVel());
         double angleY = Math.asin(particle.getYVel() / particle.getVel());
         if (particle.getVel() == 0) {
             angleX = 0;
@@ -189,11 +204,25 @@ public class Particle {
         }
         this.xVel = this.vel * Math.cos(angleX);
         this.yVel = this.vel * Math.sin(angleY);
-        Dynamics.reRoute(particle);
+
+        //Dynamics.reRoute(particle);
+        if (this.isZombie()) {
+            this.xPos = this.xPos + this.xVel * deltaT;
+            this.yPos = this.yPos + this.yVel * deltaT;
+        }*/
+
+        double difx = Math.abs(particle.getXPos() - this.getXPos());
+        double dify = Math.abs(particle.getYPos() - this.getYPos());
+
+        double a = Math.tan(dify/difx);
+        this.xVel = this.vel * Math.cos(-a);
+        this.yVel = this.vel * Math.sin(-a);
+
         if (this.isZombie()) {
             this.xPos = this.xPos + this.xVel * deltaT;
             this.yPos = this.yPos + this.yVel * deltaT;
         }
+
     }
 
     private void persecuteHuman(Particle human) {
@@ -266,18 +295,16 @@ public class Particle {
                 }
             }
             this.temporalTarget = new Pair<>(this.xPos + 2 * (closestZombie.getXVel() / Math.abs(closestZombie.getXVel())), this.yPos + 2 * (closestZombie.getYVel() / Math.abs(closestZombie.getYVel())));
-            if (obstacleDistance > humanInteractionDistance) {
-                setNewDirection(closestZombie); //solo escapar del zombie
-            } else {
-                Dynamics.reRoute(this);
+            //if (obstacleDistance > humanInteractionDistance) {
+                //setNewDirection(closestZombie); //solo escapar del zombie
+            //} else {
+                //Dynamics.reRoute(this);
                 //TODO setTemporalTarget //evitar al zombie y la pared/humano
-            }
+           // }
             //play with the obstacle and the closest zombie
         }
     }
 
-    //CREO QUE TENDRIA QUE ESTAR MOVIENDOSE RANDOM Y SI ENCUENTR UNO EN DISTANCE<RADIO QUE VE
-    //LO EMPIEZA A PERSEGUIR
     private void persecuteRandomHuman() {
         Particle p = getRandomTarget(); //busca un humano random para perseguir
         persecuteHuman(p);
@@ -296,17 +323,33 @@ public class Particle {
             if (System.currentTimeMillis() - this.getCollisionTime() > 7000) {
                 this.setWaiting(false);             //lo convierte en zombie
                 this.setHuman(false);
+                this.color = zombieColor;
                 countZombies++;
+                this.vel = zombieVelocitySlow;
+                if(this.isZombie()){
+                    persecutions.remove(this);
+                }
                 persecuteRandomHuman();
             }
         } else {
             if (this.isZombie()) {
-                if (distance > interactionDistance || particle.isZombie() || particle.isWall()) {
-                    this.vel = zombieVelocitySlow;
+                if (distance > interactionDistance || particle.isZombie() || particle.isWall()) { // particle.isZombie no tendria sentido porque se
+                    this.vel = zombieVelocitySlow;                                                 //descarto en checkProximity
                     persecuteRandomHuman();
                     persecutions.remove(this);
-                } else if (distance == 0) {               //si choco
-                    this.setWaiting(true);
+                }
+                if (distance <= 0.1) {               //si choco
+                    if(particle.isHuman){                   //choca con humano
+                        this.setWaiting(true);
+                        this.vel = 0;
+                        this.xVel = 0;
+                        this.yVel = 0;
+                    }
+                    else if(hitWall==1){                                     //choca con wall
+                        hitsWall(this);
+                        hitWall =0;
+                    }
+
                 } else {            // tiene a un humano cerca
                     this.vel = persecutionZombieVelocity;
                     persecutions.put(this, particle); //zombie, human
@@ -315,21 +358,27 @@ public class Particle {
             } else if (this.isHuman()) {
                 if (persecutions.containsValue(this)) { //si esta siendo perseguido
                     List<Particle> dangerousZombies = getZombiesPersecutingHuman(this);
+                    setParticleSleeping(false);
                     avoidZombies(dangerousZombies, particle, distance);
                 } else if (distance > humanInteractionDistance) { //si no tiene nada cerca
-//                    setVelocityToZero(this);
-                } else if (distance == 0) {     //si se choco
+                    setVelocityToZero(this);
+                    setParticleSleeping(true);
+                } else if (distance <= 1) {     //si se choco
                     if (particle.isZombie()) {          //si choco con un zombie
                         this.setWaiting(true);
+                        setVelocityToZero(this);
                         this.setCollisionTime(System.currentTimeMillis());
                         particle.setCollisionTime(System.currentTimeMillis());
                     } else if (particle.isHuman) {
                         this.setIsAtContactWithHuman(true);
+                    }else if(hitWall == 0.1){
+                        hitsWall(this);
+                        hitWall = 0;
                     }
                 } else {
-                    if (particle.isHuman()) {
+                    if (particle.isHuman() && !this.isParticleSleeping ) {
                         repelHumans(particle);
-                    } else if (particle.isWall()) {
+                    } else if (particle.isWall() && !this.isParticleSleeping) {
                         avoidWalls(particle);
                     }
                 }
@@ -337,6 +386,12 @@ public class Particle {
         }
         this.currentTarget = Dynamics.checkStatus(this);
         Dynamics.cpm(this, this.currentTarget);
+    }
+
+    public void hitsWall(Particle particle){
+        particle.vel = -(particle.getVel());
+        particle.xVel = -(particle.getXVel());
+        particle.yVel = -(particle.getYVel());
     }
 
 }

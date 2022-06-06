@@ -12,7 +12,6 @@ import java.util.Map;
 import static ar.edu.itba.ss.tp5.App.N;
 
 public class SimulationController {
-
     static List<Particle> particles = new ArrayList<>();
     FilePositionGenerator filePositionGenerator;
     public static int walls = 0;
@@ -25,7 +24,7 @@ public class SimulationController {
 
     public static double interactionDistance = 4;
 
-    public static double humanInteractionDistance = 2;
+    public static double humanInteractionDistance = 4;
     public static double zombieVelocitySlow = 0.3;
     public static double persecutionZombieVelocity = 4;
 
@@ -34,9 +33,9 @@ public class SimulationController {
     public static double maxParticleRadius = 0.32;
     public static double radiusStep = 0.05;
 
-    public double zombieColor = 1;
-    public double humanColor = 0.5;
-    public double wallColor = 0.75;
+    public static double zombieColor = 1;
+    public static double humanColor = 0.5;
+    public static double wallColor = 0.75;
 
     public double count = 0;
 
@@ -59,17 +58,18 @@ public class SimulationController {
             randomX = circleRadius + randomRadius * Math.cos(randomAngle);
             randomY = circleRadius + randomRadius * Math.sin(randomAngle);
             if (!particleOverlaps(randomX, randomY)) {
-                particles.add(new Particle(particles.size(), randomX, randomY, 4, minParticleRadius, humanColor, true, false));
+                particles.add(new Particle(particles.size(), randomX, randomY, 0, minParticleRadius, humanColor, true, false, false));
             }
         }
 
         // agrega al zombie
-        particles.add(new Particle(particles.size(), circleRadius, circleRadius, zombieVelocitySlow, minParticleRadius, zombieColor, false, false));
+        particles.add(new Particle(particles.size(), circleRadius, circleRadius, zombieVelocitySlow, minParticleRadius, zombieColor, false, false, true));
+
 
         // agrega las paredes
         for (double j = 0; j < 360.0; j += 0.1) {
             walls += 1;
-            particles.add(new Particle(circleRadius + circleRadius * Math.cos(j), circleRadius + circleRadius * Math.sin(j), 0, minParticleRadius, wallColor, true, true));
+            particles.add(new Particle(circleRadius + circleRadius * Math.cos(j), circleRadius + circleRadius * Math.sin(j), 0, minParticleRadius, wallColor, false, true, false));
         }
         filePositionGenerator.addWalls(particles);
         filePositionGenerator.addParticles(particles);
@@ -100,9 +100,7 @@ public class SimulationController {
             // el humano se convierte en zombie
 
             // humanos quieren escapar del zombie, esquivando paredes y humanos
-
             // guarda posiciones de todas las particulas
-
         }
     }
 
@@ -110,10 +108,10 @@ public class SimulationController {
     // un tiempo/un porcentaje de zombies/etc
     public boolean cutCondition(int countZombies) {
         //return true;
-//        return (((double) countZombies / N) >= 0.75);
+        //return (((double) countZombies / N) >= 0.75);
         count += 1;
-        System.out.println(count);
-        return count > 10;
+
+        return (count > 1000);
     }
 
     public boolean particleOverlaps(double x, double y) {
@@ -127,7 +125,7 @@ public class SimulationController {
 
 
     public static double calculateDistance(Particle p1, Particle p2) {
-        return Math.sqrt(Math.pow((p1.getXPos() - p1.getRadius()) - (p2.getXPos() - p2.getRadius()), 2) - Math.pow((p1.getYPos() - p1.getRadius()) - (p2.getYPos() - p2.getRadius()), 2));
+        return Math.sqrt(Math.pow((p1.getXPos() ) - (p2.getXPos() ), 2) + Math.pow((p1.getYPos() ) - (p2.getYPos() ), 2));
     }
 
     public Pair<Double, Particle> checkProximity(Particle particle) {

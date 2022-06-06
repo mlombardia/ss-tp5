@@ -20,11 +20,11 @@ public class Dynamics {
 
     public static void cpm(Particle particle, Pair<Double, Double> target) {
 
-        if (target != null){
-            particle.currentTarget = target;
-        }
+        //if (target != null){
+        //    particle.currentTarget = target;
+        //}
 
-        if (particle.isHuman() && !particle.isWaiting()) {      // si es un humano y no lo estan comiendo
+        if (particle.isHuman() && !particle.isWaiting() && !particle.isParticleSleeping()) {      // si es un humano y no lo estan comiendo
             if (particle.isAtContactWithHuman()){
                 particle.setVel(vdMax);
                 particle.setRadius(minParticleRadius);
