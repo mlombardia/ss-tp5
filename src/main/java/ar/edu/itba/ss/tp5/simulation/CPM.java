@@ -13,14 +13,15 @@ import static ar.edu.itba.ss.tp5.simulation.SimulationController.*;
 public class CPM {
     private static Map<Particle, Double[]> directions = new HashMap<>();
     private static Map<Particle, Particle> targets = new HashMap<>();
+    private static Map<Particle, Particle> transformations = new HashMap<>();
 
 
     public static void run(FilePositionGenerator filePositionGenerator) {
-        for (int i = 0; i < 1000; i++) {
-//        while (!cutCondition()) {
+//        for (int i = 0; i < 10000; i++) {
+        while (!cutCondition()) {
             directions.clear();
+            checkBites();
             for (Particle particle : particles) {
-                checkBites(particle);
                 double[] closestParticle = getClosestParticle(particle);
                 double[] closestWall = getClosestWall(particle);
                 if (closestParticle[1] > 0 && closestWall[2] > 0 && particle.getRadius() < rMax) {
@@ -28,23 +29,41 @@ public class CPM {
                 }
                 if (crashed(particle, closestParticle, closestWall)) {
                     Particle aux = particles.get((int) closestParticle[0]);
-                    if (closestParticle[1] < particle.getRadius()) {
+                    particle.setRadius(rMin);
+                    if (closestParticle[1] - rMax < particle.getRadius()) {
                         if (particle.isHuman()) {
                             if (aux.isHuman()) {
                                 escape(particle, aux.getXPos(), aux.getYPos(), false);
+                                saveDirections(particle);
+
                             } else {
-                                //eat
+                                if (!transformations.containsKey(particle)) {
+                                    transformations.put(particle, aux);
+                                    particle.setBiteTime(System.currentTimeMillis());
+                                    particle.setXVel(0);
+                                    particle.setYVel(0);
+                                }
                             }
                         } else {
                             if (aux.isHuman()) {
-                                //eat
+                                if (!transformations.containsKey(particle)) {
+                                    transformations.put(particle, aux);
+                                    particle.setBiteTime(System.currentTimeMillis());
+                                    particle.setXVel(0);
+                                    particle.setYVel(0);
+                                }
+
                             } else {
                                 escape(particle, aux.getXPos(), aux.getYPos(), true);
+                                saveDirections(particle);
+
                             }
                         }
 
                     } else if (closestWall[2] < particle.getRadius()) {
                         escape(particle, closestWall[0], closestWall[1], !particle.isHuman());
+                        saveDirections(particle);
+
                     } else {
                         //?
                     }
@@ -64,21 +83,33 @@ public class CPM {
         }
     }
 
-
-    private static void moveAfterCrash(Particle particle) {
-    }
-
-    private static void checkBites(Particle particle) {
+    private static void checkBites() {
+        List<Particle> toRemove = new ArrayList<>();
+        for (Particle p : transformations.keySet()) {
+            Particle particle = transformations.get(p);
+            if (p.getBiteTime() != NOT_BITTEN && System.currentTimeMillis() - p.getBiteTime() > 10) {
+                if (p.isHuman()) zombies++;
+                p.setHuman(false);
+                p.setBiteTime(NOT_BITTEN);
+//                transformations.remove(p);
+                toRemove.add(p);
+                targets.remove(p);
+                escape(p, particle.getXPos(), particle.getYPos(), true);
+                saveDirections(particle);
+                //move
+            }
+        }
+        toRemove.forEach(item -> transformations.remove(item));
 
     }
 
     private static boolean crashed(Particle particle, double[] closestParticle, double[] closestWall) {
-        return (closestParticle[1] < particle.getRadius() || closestWall[2] < particle.getRadius());
+        return (closestParticle[1] - rMin < particle.getRadius() || closestWall[2] < particle.getRadius());
     }
 
     private static void handleZombie(Particle particle, double[] closestParticle, double[] closestWall) {
         Particle human;
-        double attackAttempts = 50;
+        double attackAttempts = 10;
         particle.setAttackAttempts(particle.getAttackAttempts() - 1);
         if (particles.get((int) closestParticle[0]).isHuman() && (closestParticle[1] <= zombieInteractionDistance) && particle.getAttackAttempts() <= 0) {
             human = particles.get((int) closestParticle[0]);
@@ -122,8 +153,13 @@ public class CPM {
         double deltaY = particle.getYPos() - y;
         double angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
         if (angle < 0) angle += 2 * Math.PI;
-        particle.setXVel(vzMax * Math.cos(angle));
-        particle.setYVel(vzMax * Math.sin(angle));
+        if (calculateDistance(particle.getXPos(), x, particle.getYPos(), y) > zombieInteractionDistance) {
+            particle.setXVel(vzMin * Math.cos(angle));
+            particle.setYVel(vzMin * Math.sin(angle));
+        } else {
+            particle.setXVel(vzMax * Math.cos(angle));
+            particle.setYVel(vzMax * Math.sin(angle));
+        }
         saveDirections(particle);
     }
 
