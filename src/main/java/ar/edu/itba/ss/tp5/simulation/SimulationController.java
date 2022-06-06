@@ -25,6 +25,10 @@ public class SimulationController {
 
     public static double deltaT = rMin / (2 * Math.max(vdMax, ve));
     public static double deltaR = rMax / (tau / deltaT);
+
+    public static double humanInteractionDistance = 1;
+    public static double zombieInteractionDistance = 4;
+
     FilePositionGenerator filePositionGenerator;
 
     private double zombieColor = 1;
@@ -53,7 +57,7 @@ public class SimulationController {
 
         // agrega las paredes
         for (double j = 0; j < 360.0; j += 0.1) {
-            walls.add(new Wall(circleRadius + circleRadius * Math.cos(j), circleRadius + circleRadius * Math.sin(j), rMin, wallColor));
+            walls.add(new Wall(circleRadius + circleRadius * Math.cos(j), circleRadius + circleRadius * Math.sin(j), wallColor, rMin));
         }
         filePositionGenerator.addWalls(particles);
         filePositionGenerator.addParticles(particles);
@@ -73,7 +77,7 @@ public class SimulationController {
     }
 
     public void simulate() {
-        CPM.run();
+        CPM.run(filePositionGenerator);
     }
 
 }
