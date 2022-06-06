@@ -3,6 +3,7 @@ package ar.edu.itba.ss.tp5.simulation;
 import ar.edu.itba.ss.tp5.models.FilePositionGenerator;
 import ar.edu.itba.ss.tp5.models.Particle;
 import ar.edu.itba.ss.tp5.models.Wall;
+import com.sun.xml.internal.ws.wsdl.writer.document.Part;
 
 import java.util.*;
 
@@ -17,13 +18,23 @@ public class CPM {
         for (int i = 0; i < 5000; i++) {
             directions.clear();
             for (Particle particle : particles) {
+                checkBites(particle);
                 double[] closestParticle = getClosestParticle(particle);
                 double[] closestWall = getClosestWall(particle);
-                if (closestParticle[1] != 0 && closestWall[2] != 0 && particle.getRadius() < rMax) {
+                if (closestParticle[1] > particle.getRadius() && closestWall[2] > particle.getRadius() && particle.getRadius() < rMax) {
                     particle.setRadius(particle.getRadius() + deltaR);
                 }
-                if (closestParticle[1] == 0 || closestWall[2] == 0) { //crash
+                if (crashed(particle, closestParticle, closestWall)) {
                     particle.setRadius(rMin);
+                    particle.setXVel(0);
+                    particle.setYVel(0);
+                    if (!particles.get((int) closestParticle[0]).isHuman()) { //particle and zombie
+                        particle.setBiteTime(System.currentTimeMillis());
+                    }else{ //
+                        if (closestParticle[1] - particles.get((int) closestParticle[0]).getRadius() < particle.getRadius()) escape(particle,particles.get((int) closestParticle[0]).getXPos(), particles.get((int) closestParticle[0]).getYPos(), !particles.get((int) closestParticle[0]).isHuman() );
+                        else escape(particle, closestWall[0], closestWall[1], !particle.isHuman());
+
+                    }
                 } else if (!particle.isHuman()) { //zombie
                     handleZombie(particle, closestParticle, closestWall);
                 } else {
@@ -33,6 +44,7 @@ public class CPM {
                     particle.setXVel(0);
                     particle.setYVel(0);
                     targets.remove(particle);
+                    System.out.println("here");
                 }
             }
             updatePositions();
@@ -40,16 +52,38 @@ public class CPM {
         }
     }
 
+    private static void checkBites(Particle particle) {
+        if (particle.getBiteTime() != NOT_BITTEN) {
+            if (System.currentTimeMillis() - particle.getBiteTime() >= 7000) {
+                particle.setHuman(false);
+                particle.setBiteTime(NOT_BITTEN);
+            }
+        }
+    }
+
+    private static boolean crashed(Particle particle, double[] closestParticle, double[] closestWall) {
+        return (closestParticle[1] - particles.get((int) closestParticle[0]).getRadius() < particle.getRadius() || closestWall[2] < particle.getRadius());
+    }
+
     private static void handleZombie(Particle particle, double[] closestParticle, double[] closestWall) {
         Particle human;
-        if (!targets.containsKey(particle)) {
-                human = particles.get((int) closestParticle[0]);
+        double attackAttempts = 50;
+        particle.setAttackAttempts(particle.getAttackAttempts() - 1);
+        if ((closestParticle[1] <= zombieInteractionDistance) && particle.getAttackAttempts() <= 0) {
+            human = particles.get((int) closestParticle[0]);
+            particle.setAttackAttempts(attackAttempts);
         } else {
-            human = targets.get(particle);
+            if (targets.containsKey(particle)) {
+                human = targets.get(particle); // get assigned target
+            } else { //target out of range
+                human = getRandomTarget();
+                particle.setAttackAttempts(attackAttempts);
+            }
         }
         follow(particle, human.getXPos(), human.getYPos());
         targets.put(particle, human); //zombie human
-//        System.out.println(particle.getXPos() + " " + particle.getYPos());
+        System.out.println(particle.getXPos() + " " + particle.getYPos());
+        System.out.println(particle + " " + human);
     }
 
     private static void handleHuman(Particle particle, double[] closestParticle, double[] closestWall) {
@@ -72,12 +106,15 @@ public class CPM {
     }
 
     private static void follow(Particle particle, double x, double y) {
-        double deltaX = particle.getXPos() - x - 2 * particle.getRadius();
-        double deltaY = particle.getYPos() - y - 2 * particle.getRadius();
-        double angle = Math.atan2(deltaY, deltaX) * (180/ Math.PI);
+        double deltaX = particle.getXPos() - x - (2 * particle.getRadius());
+        double deltaY = particle.getYPos() - y - (2 * particle.getRadius());
+        double angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+        if (angle < 0) angle += 2 * Math.PI;
         particle.setXVel(vzMax * Math.cos(angle));
         particle.setYVel(vzMax * Math.sin(angle));
         saveDirections(particle);
+        particle.setXPos(particle.getXPos() + particle.getXVel());
+        particle.setYPos(particle.getYPos() + particle.getYVel());
     }
 
     private static void saveDirections(Particle particle) {

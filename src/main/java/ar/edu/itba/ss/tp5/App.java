@@ -10,6 +10,7 @@ import ar.edu.itba.ss.tp5.simulation.SimulationController;
 public class App {
     public static int N = 10;
     public static int circleRadius = 11;
+    public static double NOT_BITTEN = -1;
 
     public static void main(String[] args) {
         int velZ = 3;

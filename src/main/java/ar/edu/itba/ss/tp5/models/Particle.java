@@ -2,10 +2,11 @@ package ar.edu.itba.ss.tp5.models;
 
 import java.util.Objects;
 
+import static ar.edu.itba.ss.tp5.App.*;
 import static ar.edu.itba.ss.tp5.simulation.SimulationController.*;
 
 public class Particle {
-    private int id;
+    private final int id;
     private double xPos;
     private double yPos;
     private double xVel;
@@ -13,6 +14,9 @@ public class Particle {
     private double color;
     private double radius;
     private boolean isHuman;
+    private double biteTime = NOT_BITTEN;
+
+    private double attackAttempts = 0;
 
     public Particle(int id, double xPos, double yPos, double vel, double radius, double color, boolean isHuman) {
         this.id = id;
@@ -85,6 +89,22 @@ public class Particle {
 
     public void setRadius(double radius) {
         this.radius = radius;
+    }
+
+    public double getBiteTime() {
+        return biteTime;
+    }
+
+    public void setBiteTime(double biteTime) {
+        this.biteTime = biteTime;
+    }
+
+    public double getAttackAttempts() {
+        return attackAttempts;
+    }
+
+    public void setAttackAttempts(double attackAttempts) {
+        this.attackAttempts = attackAttempts;
     }
 
     @Override

@@ -18,15 +18,15 @@ public class SimulationController {
     public static double vdMax = 4;
 
     public static double vzMin = 0.3;
-    public static double vzMax = 4;
+    public static double vzMax = 3;
     public static double ve = 4;
     public static double rMin = 0.15;
-    public static double rMax = 0.32;
+    public static double rMax = 0.30;
 
     public static double deltaT = rMin / (2 * Math.max(vdMax, ve));
     public static double deltaR = rMax / (tau / deltaT);
 
-    public static double humanInteractionDistance = 1;
+    public static double humanInteractionDistance = 2;
     public static double zombieInteractionDistance = 4;
 
     FilePositionGenerator filePositionGenerator;
