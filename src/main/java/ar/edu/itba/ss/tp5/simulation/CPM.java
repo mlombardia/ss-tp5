@@ -17,7 +17,7 @@ public class CPM {
 
 
     public static void run(FilePositionGenerator filePositionGenerator) {
-        for (int i = 0; i < 5000; i++) {
+        while (!cutCondition()) {
             directions.clear();
             for (Particle particle : particles) {
                 checkBites(particle);
@@ -57,6 +57,7 @@ public class CPM {
         }
     }
 
+
     private static void moveAfterCrash(Particle particle) {
         Particle aux = crashes.get(particle);
         double angle = getRandom(0, 360);
@@ -74,6 +75,7 @@ public class CPM {
         if (particle.getBiteTime() != NOT_BITTEN) {
             if (System.currentTimeMillis() - particle.getBiteTime() >= 10) {
                 targets.remove(particle);
+                if (particle.isHuman()) zombies++;
                 particle.setHuman(false);
                 particle.setBiteTime(NOT_BITTEN);
                 if (crashes.containsKey(particle)) {
@@ -84,7 +86,7 @@ public class CPM {
     }
 
     private static boolean crashed(Particle particle, double[] closestParticle, double[] closestWall) {
-        return (closestParticle[1] < 4*particle.getRadius() || closestWall[2] < particle.getRadius());
+        return (closestParticle[1] < 4 * particle.getRadius() || closestWall[2] < particle.getRadius());
     }
 
     private static void handleZombie(Particle particle, double[] closestParticle, double[] closestWall) {
@@ -104,8 +106,7 @@ public class CPM {
         }
         follow(particle, human.getXPos(), human.getYPos());
         targets.put(particle, human); //zombie human
-        System.out.println(particle.getXPos() + " " + particle.getYPos());
-        System.out.println(particle + " " + human);
+
     }
 
     private static void handleHuman(Particle particle, double[] closestParticle, double[] closestWall) {

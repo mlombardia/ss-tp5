@@ -35,6 +35,8 @@ public class SimulationController {
     private double humanColor = 0.5;
     private double wallColor = 0.75;
 
+    public static int zombies = 1;
+
     public SimulationController(FilePositionGenerator filePositionGenerator) {
         this.filePositionGenerator = filePositionGenerator;
         generateMap();
@@ -80,4 +82,7 @@ public class SimulationController {
         CPM.run(filePositionGenerator);
     }
 
+    public static boolean cutCondition() {
+        return (double) zombies / N >= 0.75;
+    }
 }
