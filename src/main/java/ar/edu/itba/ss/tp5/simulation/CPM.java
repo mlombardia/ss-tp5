@@ -68,12 +68,12 @@ public class CPM {
         aux.setXVel(Math.cos(angleInRadians) * vzMin);
         aux.setYVel(Math.sin(angleInRadians) * vzMin);
         escape(particle, aux.getXPos(), aux.getYPos(), !particle.isHuman());
-        escape(aux, particle.getXPos(), particle.getYPos(), !aux.isHuman());
     }
 
     private static void checkBites(Particle particle) {
         if (particle.getBiteTime() != NOT_BITTEN) {
             if (System.currentTimeMillis() - particle.getBiteTime() >= 10) {
+                targets.remove(particle);
                 particle.setHuman(false);
                 particle.setBiteTime(NOT_BITTEN);
                 if (crashes.containsKey(particle)) {
@@ -84,7 +84,7 @@ public class CPM {
     }
 
     private static boolean crashed(Particle particle, double[] closestParticle, double[] closestWall) {
-        return (closestParticle[1] - particles.get((int) closestParticle[0]).getRadius() < particle.getRadius() || closestWall[2] < particle.getRadius());
+        return (closestParticle[1] < 4*particle.getRadius() || closestWall[2] < particle.getRadius());
     }
 
     private static void handleZombie(Particle particle, double[] closestParticle, double[] closestWall) {
@@ -144,8 +144,10 @@ public class CPM {
     private static void updatePositions() {
         for (Particle particle : directions.keySet()) {
             Double[] positions = directions.get(particle);
-            particle.setXPos(positions[0]);
-            particle.setYPos(positions[1]);
+            if (particle.getBiteTime() == NOT_BITTEN) {
+                particle.setXPos(positions[0]);
+                particle.setYPos(positions[1]);
+            }
         }
     }
 
