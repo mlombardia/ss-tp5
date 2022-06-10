@@ -86,6 +86,12 @@ public class CPM {
             if (System.currentTimeMillis() - time >= 10) {
                 toRemove.add(particlePair); //remove later on
                 double random = getRandom(0, 100);
+                targets.remove(particle1);
+                targets.remove(particle2);
+
+                particle1.setBiteTime(NOT_BITTEN);
+                particle2.setBiteTime(NOT_BITTEN);
+
                 if (random / 100 <= RECOVERY_POSSIBILITY) {
                     if (!particle2.isHuman()) zombies--;
                     particle2.setHuman(true);
@@ -96,23 +102,17 @@ public class CPM {
                     particle1.setHuman(false);
                     if (particle2.isHuman()) zombies++;
                     particle2.setHuman(false);
+
+                    Particle human = getClosestHuman(particle1);
+                    particle2.setAttackAttempts(30);
+                    follow(particle2, human.getXPos(), human.getYPos());
+                    targets.put(particle2, human);
+
+                    human = getClosestHuman(particle2);
+                    particle1.setAttackAttempts(30);
+                    follow(particle1, human.getXPos(), human.getYPos());
+                    targets.put(particle1, human); //zombie human
                 }
-                targets.remove(particle1);
-                targets.remove(particle2);
-
-                particle1.setBiteTime(NOT_BITTEN);
-                particle2.setBiteTime(NOT_BITTEN);
-
-                Particle human = getClosestHuman(particle1);
-                particle2.setAttackAttempts(30);
-                follow(particle2, human.getXPos(), human.getYPos());
-                targets.put(particle2, human);
-
-                human = getClosestHuman(particle2);
-                particle1.setAttackAttempts(30);
-                follow(particle1, human.getXPos(), human.getYPos());
-                targets.put(particle1, human); //zombie human
-
             }
         }
         toRemove.forEach(item -> transformations.remove(item));
