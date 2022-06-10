@@ -37,7 +37,7 @@ public class SimulationController {
 
     public static int zombies = 1;
 
-    public static double RECOVERY_POSSIBILITY = 0.05;
+    public static double RECOVERY_POSSIBILITY = 0.01;
 
     public SimulationController(FilePositionGenerator filePositionGenerator) {
         this.filePositionGenerator = filePositionGenerator;

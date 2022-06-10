@@ -15,7 +15,6 @@ public class Particle {
     private double radius;
     private boolean isHuman;
     private double biteTime = NOT_BITTEN;
-
     private double attackAttempts = 0;
 
     public Particle(int id, double xPos, double yPos, double vel, double radius, double color, boolean isHuman) {

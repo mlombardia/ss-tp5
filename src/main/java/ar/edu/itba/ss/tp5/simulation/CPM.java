@@ -4,6 +4,7 @@ import ar.edu.itba.ss.tp5.models.FilePositionGenerator;
 import ar.edu.itba.ss.tp5.models.Particle;
 import ar.edu.itba.ss.tp5.models.Wall;
 import com.sun.xml.internal.ws.wsdl.writer.document.Part;
+import javafx.util.Pair;
 
 import java.util.*;
 
@@ -13,11 +14,10 @@ import static ar.edu.itba.ss.tp5.simulation.SimulationController.*;
 public class CPM {
     private static Map<Particle, Double[]> directions = new HashMap<>();
     private static Map<Particle, Particle> targets = new HashMap<>();
-    private static Map<Particle, Particle> transformations = new HashMap<>();
+    private static Map<Pair<Particle, Particle>, Long> transformations = new HashMap<>();
 
 
     public static void run(FilePositionGenerator filePositionGenerator) {
-//        for (int i = 0; i < 10000; i++) {
         while (!cutCondition()) {
             directions.clear();
             checkBites();
@@ -34,36 +34,28 @@ public class CPM {
                         if (particle.isHuman()) {
                             if (aux.isHuman()) {
                                 escape(particle, aux.getXPos(), aux.getYPos(), false);
-                                saveDirections(particle);
-
                             } else {
-                                if (!transformations.containsKey(particle)) {
-                                    transformations.put(particle, aux);
+                                if (!transformations.containsKey(new Pair<>(particle, aux))) {
+                                    System.out.println(aux + " " + particle);
+                                    transformations.put(new Pair<>(particle, aux), System.currentTimeMillis());
                                     particle.setBiteTime(System.currentTimeMillis());
+                                    aux.setBiteTime(System.currentTimeMillis());
                                     particle.setXVel(0);
                                     particle.setYVel(0);
+                                    aux.setXVel(0);
+                                    aux.setYVel(0);
+                                    directions.remove(aux);
+                                    directions.remove(particle);
                                 }
                             }
                         } else {
-                            if (aux.isHuman()) {
-                                if (!transformations.containsKey(particle)) {
-                                    transformations.put(particle, aux);
-                                    particle.setBiteTime(System.currentTimeMillis());
-                                    particle.setXVel(0);
-                                    particle.setYVel(0);
-                                }
-
-                            } else {
+                            if (!aux.isHuman()) {
                                 escape(particle, aux.getXPos(), aux.getYPos(), true);
-                                saveDirections(particle);
-
                             }
                         }
 
                     } else if (closestWall[2] < particle.getRadius()) {
                         escape(particle, closestWall[0], closestWall[1], !particle.isHuman());
-                        saveDirections(particle);
-
                     } else {
                         //?
                     }
@@ -76,8 +68,8 @@ public class CPM {
                     particle.setXVel(0);
                     particle.setYVel(0);
                     targets.remove(particle);
-                    escape(particle, closestWall[0], closestWall[1], !particle.isHuman());
-                    saveDirections(particle);
+                    follow(particle, circleRadius, circleRadius);
+//                    escape(particle, closestWall[0], closestWall[1], !particle.isHuman());
                 }
             }
             updatePositions();
@@ -86,28 +78,41 @@ public class CPM {
     }
 
     private static void checkBites() {
-        List<Particle> toRemove = new ArrayList<>();
-        for (Particle p : transformations.keySet()) {
-            Particle particle = transformations.get(p);
-            if (p.getBiteTime() != NOT_BITTEN && System.currentTimeMillis() - p.getBiteTime() > 7000) {
+        List<Pair<Particle, Particle>> toRemove = new ArrayList<>();
+        for (Pair<Particle, Particle> particlePair : transformations.keySet()) {
+            Particle particle1 = particlePair.getKey();
+            Particle particle2 = particlePair.getValue();
+            long time = transformations.get(particlePair);
+            if (System.currentTimeMillis() - time >= 10) {
+                toRemove.add(particlePair); //remove later on
                 double random = getRandom(0, 100);
                 if (random / 100 <= RECOVERY_POSSIBILITY) {
-                    if (!p.isHuman()) zombies--;
-                    p.setHuman(true);
-                    if (!particle.isHuman()) zombies--;
-                    particle.setHuman(true);
-                    toRemove.add(particle);
-                    particle.setBiteTime(NOT_BITTEN);
+                    if (!particle2.isHuman()) zombies--;
+                    particle2.setHuman(true);
+                    if (!particle1.isHuman()) zombies--;
+                    particle1.setHuman(true);
                 } else {
-                    if (p.isHuman()) zombies++;
-                    p.setHuman(false);
+                    if (particle1.isHuman()) zombies++;
+                    particle1.setHuman(false);
+                    if (particle2.isHuman()) zombies++;
+                    particle2.setHuman(false);
                 }
-                p.setBiteTime(NOT_BITTEN);
-//                transformations.remove(p);
-                toRemove.add(p);
-                targets.remove(p);
-                follow(p, circleRadius, circleRadius);
-                //move
+                targets.remove(particle1);
+                targets.remove(particle2);
+
+                particle1.setBiteTime(NOT_BITTEN);
+                particle2.setBiteTime(NOT_BITTEN);
+
+                Particle human = getClosestHuman(particle1);
+                particle2.setAttackAttempts(30);
+                follow(particle2, human.getXPos(), human.getYPos());
+                targets.put(particle2, human);
+
+                human = getClosestHuman(particle2);
+                particle1.setAttackAttempts(30);
+                follow(particle1, human.getXPos(), human.getYPos());
+                targets.put(particle1, human); //zombie human
+
             }
         }
         toRemove.forEach(item -> transformations.remove(item));
@@ -120,14 +125,14 @@ public class CPM {
 
     private static void handleZombie(Particle particle, double[] closestParticle, double[] closestWall) {
         Particle human;
-        double attackAttempts = 10;
+        double attackAttempts = 50;
         particle.setAttackAttempts(particle.getAttackAttempts() - 1);
         if (particles.get((int) closestParticle[0]).isHuman() && (closestParticle[1] <= zombieInteractionDistance) && particle.getAttackAttempts() <= 0) {
             human = particles.get((int) closestParticle[0]);
             particle.setAttackAttempts(attackAttempts);
             chaseHuman(particle, human.getXPos(), human.getYPos());
         } else {
-            if (targets.containsKey(particle)) {
+            if (targets.containsKey(particle) && particle.getAttackAttempts() > 0) {
                 human = targets.get(particle); // get assigned target
                 chaseHuman(particle, human.getXPos(), human.getYPos());
             } else { //target out of range
@@ -145,13 +150,11 @@ public class CPM {
             Particle aux = particles.get((int) closestParticle[0]);
             if (!aux.isHuman()) {
                 escape(particle, aux.getXPos(), aux.getYPos(), !particle.isHuman());
-                saveDirections(particle);
             } else if (closestParticle[1] > humanInteractionDistance) {
                 particle.setXVel(0);
                 particle.setYVel(0);
             } else {
                 escape(particle, aux.getXPos(), aux.getYPos(), !particle.isHuman());
-                saveDirections(particle);
             }
         } else {
             if (closestWall[2] > humanInteractionDistance) {
@@ -159,7 +162,6 @@ public class CPM {
                 particle.setYVel(0);
             } else {
                 escape(particle, closestWall[0], closestWall[1], !particle.isHuman());
-                saveDirections(particle);
             }
         }
     }
@@ -217,6 +219,8 @@ public class CPM {
             particle.setXVel(xPos * vdMax);
             particle.setYVel(yPos * vdMax);
         }
+        saveDirections(particle);
+
     }
 
     public static boolean isOutOfBounds(Particle particle) {
@@ -238,6 +242,20 @@ public class CPM {
     public static double calculateDistanceWall(Particle p1, Wall wall) {
         return calculateDistance((p1.getXPos() - p1.getRadius()), (wall.getXPos() - wall.getRadius()), (p1.getYPos() - p1.getRadius()), (wall.getYPos() - wall.getRadius()));
 
+    }
+
+    public static Particle getClosestHuman(Particle particle) {
+        Particle closest = getRandomTarget();
+        double distance = calculateDistanceParticle(particle, closest);
+        for (Particle p : particles) {
+            if (!p.equals(particle) && p.isHuman()) {
+                if (distance > calculateDistanceParticle(p, particle)) {
+                    closest = p;
+                    distance = calculateDistanceParticle(p, particle);
+                }
+            }
+        }
+        return closest;
     }
 
     public static double[] getClosestParticle(Particle particle) {
