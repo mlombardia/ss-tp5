@@ -56,11 +56,9 @@ public class CPM {
 
                     } else if (closestWall[2] < particle.getRadius()) {
                         escape(particle, closestWall[0], closestWall[1], !particle.isHuman());
-                    } else {
-                        //?
                     }
                 } else if (!particle.isHuman()) { //zombie
-                    handleZombie(particle, closestParticle, closestWall);
+                    handleZombie(particle);
                 } else {
                     handleHuman(particle, closestParticle, closestWall);
                 }
@@ -69,7 +67,6 @@ public class CPM {
                     particle.setYVel(0);
                     targets.remove(particle);
                     follow(particle, circleRadius, circleRadius);
-//                    escape(particle, closestWall[0], closestWall[1], !particle.isHuman());
                 }
             }
             updatePositions();
@@ -103,12 +100,12 @@ public class CPM {
                     if (particle2.isHuman()) zombies++;
                     particle2.setHuman(false);
 
-                    Particle human = getClosestHuman(particle1);
+                    Particle human = particles.get((int) getClosestHuman(particle1)[0]);
                     particle2.setAttackAttempts(30);
                     follow(particle2, human.getXPos(), human.getYPos());
                     targets.put(particle2, human);
 
-                    human = getClosestHuman(particle2);
+                    human = particles.get((int) getClosestHuman(particle2)[0]);
                     particle1.setAttackAttempts(30);
                     follow(particle1, human.getXPos(), human.getYPos());
                     targets.put(particle1, human); //zombie human
@@ -123,11 +120,12 @@ public class CPM {
         return (closestParticle[1] - rMin < particle.getRadius() || closestWall[2] < particle.getRadius());
     }
 
-    private static void handleZombie(Particle particle, double[] closestParticle, double[] closestWall) {
+    private static void handleZombie(Particle particle) {
         Particle human;
         double attackAttempts = 50;
+        double[] closestParticle = getClosestHuman(particle);
         particle.setAttackAttempts(particle.getAttackAttempts() - 1);
-        if (particles.get((int) closestParticle[0]).isHuman() && (closestParticle[1] <= zombieInteractionDistance) && particle.getAttackAttempts() <= 0) {
+        if ((closestParticle[1] <= zombieInteractionDistance) && particle.getAttackAttempts() <= 0) {
             human = particles.get((int) closestParticle[0]);
             particle.setAttackAttempts(attackAttempts);
             chaseHuman(particle, human.getXPos(), human.getYPos());
@@ -187,8 +185,14 @@ public class CPM {
         double distFromZombie = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
         deltaX = deltaX / distFromZombie;
         deltaY = deltaY / distFromZombie;
-        particle.setXVel((deltaX * vzMax * (particle.getRadius() - rMin) / (rMax - rMin)));
-        particle.setYVel((deltaY * vzMax * (particle.getRadius() - rMin) / (rMax - rMin)));
+        double dist = calculateDistance(particle.getXPos(), x, particle.getYPos(), y);
+        if (dist <= zombieInteractionDistance) {
+            particle.setXVel((deltaX * vzMax * (particle.getRadius() - rMin) / (rMax - rMin)));
+            particle.setYVel((deltaY * vzMax * (particle.getRadius() - rMin) / (rMax - rMin)));
+        }else{
+            particle.setXVel((deltaX * vzMin * (particle.getRadius() - rMin) / (rMax - rMin)));
+            particle.setYVel((deltaY * vzMin * (particle.getRadius() - rMin) / (rMax - rMin)));
+        }
         saveDirections(particle);
     }
 
@@ -244,7 +248,7 @@ public class CPM {
 
     }
 
-    public static Particle getClosestHuman(Particle particle) {
+    public static double[] getClosestHuman(Particle particle) {
         Particle closest = getRandomTarget();
         double distance = calculateDistanceParticle(particle, closest);
         for (Particle p : particles) {
@@ -255,7 +259,7 @@ public class CPM {
                 }
             }
         }
-        return closest;
+        return new double[]{closest.getId(), distance};
     }
 
     public static double[] getClosestParticle(Particle particle) {
