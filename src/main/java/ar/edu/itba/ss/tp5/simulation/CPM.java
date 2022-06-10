@@ -3,7 +3,6 @@ package ar.edu.itba.ss.tp5.simulation;
 import ar.edu.itba.ss.tp5.models.FilePositionGenerator;
 import ar.edu.itba.ss.tp5.models.Particle;
 import ar.edu.itba.ss.tp5.models.Wall;
-import com.sun.xml.internal.ws.wsdl.writer.document.Part;
 import javafx.util.Pair;
 
 import java.util.*;
@@ -16,7 +15,9 @@ public class CPM {
     private static Map<Particle, Particle> targets = new HashMap<>();
     private static Map<Pair<Particle, Particle>, Long> transformations = new HashMap<>();
 
-    private static double attackAttempts = 50;
+    private static double attackAttempts = 0;
+    private static double t = 0;
+    private static int zombiesInitial = 0;
 
     public static void run(FilePositionGenerator filePositionGenerator) {
         while (!cutCondition()) {
@@ -70,6 +71,10 @@ public class CPM {
             }
             updatePositions();
             filePositionGenerator.addParticles(particles);
+            filePositionGenerator.addFraction(t, zombies, N);
+            filePositionGenerator.addVelocity(t, zombiesInitial, zombies);
+            zombiesInitial = zombies;
+            t+=deltaT;
         }
     }
 
@@ -79,7 +84,7 @@ public class CPM {
             Particle particle1 = particlePair.getKey();
             Particle particle2 = particlePair.getValue();
             long time = transformations.get(particlePair);
-            if (System.currentTimeMillis() - time >= 10) {
+            if (System.currentTimeMillis() - time >= 700) {
                 toRemove.add(particlePair); //remove later on
                 double random = getRandom(0, 100);
                 targets.remove(particle1);
