@@ -76,6 +76,7 @@ public class CPM {
             zombiesInitial = zombies;
             t+=deltaT;
         }
+        System.out.println("Final time: " + t);
     }
 
     private static void checkBites() {

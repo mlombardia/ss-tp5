@@ -38,6 +38,7 @@ public class FilePositionGenerator {
             this.fw2 = new FileWriter("WallsPosition.xyz", true);
             this.fw3 = new FileWriter("ContagiousVelocity.csv", true);
             this.fw4 = new FileWriter("FractionZ.csv", true);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
