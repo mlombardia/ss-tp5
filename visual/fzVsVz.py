@@ -4,27 +4,27 @@ import numpy as np
 from matplotlib import pyplot as plt
 from statistics import mean 
 
-## FRACCION DE ZOMBIES A TRAVES DEL TIEMPO PARA DISTINTOS N
+## FRACCION DE ZOMBIES A TRAVES DEL TIEMPO PARA DISTINTOS V
 
-## 40 humanos
-file = open("../FractionZ40.csv", 'r')
+## velocidad del zombie = 2
+file = open("../FractionZ2.csv", 'r')
 InputLines = file.readlines()
 
-times40 = []
-fz40 = []
-count40 = 0
+times2 = []
+fz2 = []
+count2 = 0
 
 for line in InputLines:
-    if count40 >= 1:
+    if count2 >= 1:
         str = line.strip().split(',')
-        times40.append(float(str[0]))
+        times2.append(float(str[0]))
         str = line.strip().split(',')
-        fz40.append(float(str[1]))
-    count40 += 1
+        fz2.append(float(str[1]))
+    count2 += 1
 
 
-## 80 humanos
-file = open("../FractionZ80.csv", 'r')
+##  velocidad del zombie = 2.5
+file = open("../FractionZ25.csv", 'r')
 InputLines = file.readlines()
 
 times80 = []
@@ -39,8 +39,8 @@ for line in InputLines:
         fz80.append(float(str[1]))
     count80 += 1
 
-## 140 humanos
-file = open("../FractionZ140.csv", 'r')
+##  velocidad del zombie = 3
+file = open("../FractionZ3.csv", 'r')
 InputLines = file.readlines()
 
 times140 = []
@@ -56,8 +56,8 @@ for line in InputLines:
     count140 += 1
 
 
-## 200 humanos
-file = open("../FractionZ200.csv", 'r')
+##  velocidad del zombie = 3.5
+file = open("../FractionZ35.csv", 'r')
 InputLines = file.readlines()
 
 times200 = []
@@ -75,8 +75,8 @@ for line in InputLines:
 fig, ax = plt.subplots()
 
 
-## 260 humanos
-file = open("../FractionZ260.csv", 'r')
+##  velocidad del zombie = 4
+file = open("../FractionZ4.csv", 'r')
 InputLines = file.readlines()
 
 times260 = []
@@ -92,8 +92,24 @@ for line in InputLines:
     count260 += 1
 
 
-## 320 humanos
-file = open("../FractionZ320.csv", 'r')
+##  velocidad del zombie = 4.5
+file = open("../FractionZ45.csv", 'r')
+InputLines = file.readlines()
+
+times320 = []
+fz320 = []
+count320 = 0
+
+for line in InputLines:
+    if count320 >= 1:
+        str = line.strip().split(',')
+        times320.append(float(str[0]))
+        str = line.strip().split(',')
+        fz320.append(float(str[1]))
+    count320 += 1
+
+##  velocidad del zombie = 5
+file = open("../FractionZ5.csv", 'r')
 InputLines = file.readlines()
 
 times320 = []
@@ -109,8 +125,7 @@ for line in InputLines:
     count320 += 1
 
 
-
-ax.plot(times40, fz40)
+ax.plot(times2, fz2)
 ax.plot(times80, fz80)
 ax.plot(times140, fz140)
 ax.plot(times200, fz200)
@@ -121,7 +136,7 @@ ax.plot(times320, fz320)
 ax.set_xlabel('Tiempo (s)')
 ax.set_ylabel('Fraccion de zombies')
 
-ax.legend(('n=40', 'n=80', 'n=140', 'n=200', 'n=260', 'n=320'))
+ax.legend(('vz=2', 'vz=2.5', 'vz=3', 'vz=3.5', 'vz=4', 'vz=4.5', 'vz=5'))
 
 
 plt.show()

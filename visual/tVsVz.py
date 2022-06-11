@@ -4,6 +4,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from statistics import mean 
 
+## TIEMPO DE CORTE EN RELACION A LA VELOCIDAD DEL ZOMBIE
+
 # Read input
 file = open("tVsVz.txt", 'r')
 InputLines = file.readlines()
@@ -16,11 +18,11 @@ vz = []
 
 for line in InputLines:
     str = line.strip().split(' ')
-    t0.append(int(str[0]))
-    t1.append(int(str[1]))
-    t2.append(int(str[2]))
-    t3.append(int(str[3]))
-    vz.append(int(str[4]))
+    t0.append(float(str[0]))
+    t1.append(float(str[1]))
+    t2.append(float(str[2]))
+    t3.append(float(str[3]))
+    vz.append(float(str[4]))
 
 
 velocity0 = [t0[0],  t1[0] , t2[0] , t3[0]]
@@ -36,7 +38,6 @@ stdDev4 = np.std(velocity4)
 
 
 averageVelocity = [np.average(velocity0), np.average(velocity1), np.average(velocity2), np.average(velocity3), np.average(velocity4)]
-##print(n)
 fig, ax = plt.subplots()
 ax.scatter(vz, averageVelocity)
 
@@ -47,8 +48,8 @@ y_error = [stdDev0, stdDev1, stdDev2, stdDev3, stdDev4]
 
 plt.errorbar(vz,averageVelocity, yerr = y_error, capsize = 3)
 ##ax.set_title("Tiempo de corte en funcion de la velocidad del zombie con n=140??")
-ax.set_xlabel('Velocidad activa del zombie')
-ax.set_ylabel('Tiempo en llegar a la condicion de corte (s)')
+ax.set_xlabel('Velocidad activa del zombie (m/s)')
+ax.set_ylabel('Tiempo de corte (s)')
 
 plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 ax.yaxis.major.formatter._useMathText = True

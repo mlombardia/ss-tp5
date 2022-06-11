@@ -17,7 +17,7 @@ public class CPM {
 
     private static double attackAttempts = 0;
     private static double t = 0;
-    private static int zombiesInitial = 0;
+    private static int zombiesInitial = 1;
 
     public static void run(FilePositionGenerator filePositionGenerator) {
         while (!cutCondition()) {

@@ -4,11 +4,13 @@ import numpy as np
 from matplotlib import pyplot as plt
 from statistics import mean 
 
+## VELOCIDAD DE CONTAGIO EN RELACION EN RELACION A N
+
 file = open("../ContagiousVelocity.csv", 'r')
 InputLines = file.readlines()
 
 times = []
-vz = []
+vc = []
 sum = 0
 count = 0
 
@@ -17,19 +19,19 @@ for line in InputLines:
         str = line.strip().split(',')
         times.append(float(str[0]))
         str = line.strip().split(',')
-        vz.append(float(str[1]))
+        vc.append(float(str[1]))
         sum += float(str[1])
     count += 1
 
-print(count)
-print(sum)
-vzProm = (sum / (count-1))
+print("count", count)
+print("sum", sum)
+vcp = (sum / (count-1))
 
-print(vzProm)
+print("velocidad contagio promedio", vcp)
 
 
 # Read input
-file = open("vVsN.txt", 'r')
+file = open("vcVsN.txt", 'r')
 InputLines = file.readlines()
 
 v0 = []
@@ -40,11 +42,11 @@ n = []
 
 for line in InputLines:
     str = line.strip().split(' ')
-    v0.append(int(str[0]))
-    v1.append(int(str[1]))
-    v2.append(int(str[2]))
-    v3.append(int(str[3]))
-    n.append(int(str[4]))
+    v0.append(float(str[0]))
+    v1.append(float(str[1]))
+    v2.append(float(str[2]))
+    v3.append(float(str[3]))
+    n.append(float(str[4]))
 
 
 velocity0 = [v0[0],  v1[0] , v2[0] , v3[0]]
@@ -60,7 +62,6 @@ stdDev4 = np.std(velocity4)
 
 
 averageVelocity = [np.average(velocity0), np.average(velocity1), np.average(velocity2), np.average(velocity3), np.average(velocity4)]
-##print(n)
 fig, ax = plt.subplots()
 ax.scatter(n, averageVelocity)
 
@@ -72,7 +73,7 @@ y_error = [stdDev0, stdDev1, stdDev2, stdDev3, stdDev4]
 plt.errorbar(n,averageVelocity, yerr = y_error, capsize = 3)
 ##ax.set_title("Velocidad de contagio en funcion de la cantidad de humanos con vz=3??")
 ax.set_xlabel('Cantidad de humanos')
-ax.set_ylabel('Velocidad de contagio (m/s)')
+ax.set_ylabel('Velocidad de contagio (c/s)')
 
 plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 ax.yaxis.major.formatter._useMathText = True
