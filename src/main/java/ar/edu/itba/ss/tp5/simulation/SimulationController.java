@@ -2,94 +2,69 @@ package ar.edu.itba.ss.tp5.simulation;
 
 import ar.edu.itba.ss.tp5.models.FilePositionGenerator;
 import ar.edu.itba.ss.tp5.models.Particle;
-import javafx.util.Pair;
+import ar.edu.itba.ss.tp5.models.Wall;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
+import static ar.edu.itba.ss.tp5.App.*;
 
 public class SimulationController {
+    public static List<Particle> particles = new ArrayList<>();
+    public static List<Wall> walls = new ArrayList<>();
 
-    List<Particle> particles = new ArrayList<>();
+    public static double tau = 0.5;
+
+    public static double vdMin = 0;
+    public static double vdMax = 4;
+
+    public static double vzMin = 0.3;
+    public static double vzMax = 5;
+    public static double ve = 4;
+    public static double rMin = 0.15;
+    public static double rMax = 0.32;
+
+    public static double deltaT = rMin / (2 * Math.max(vdMax, ve));
+    public static double deltaR = rMax / (tau / deltaT);
+
+    public static double humanInteractionDistance =3.9;
+    public static double zombieInteractionDistance = 4;
+
     FilePositionGenerator filePositionGenerator;
-    int N;
-    int circleRadius = 11;
-    double velZ;
-    double velH = 4;
-    int countZombies = 1;
-    double deltaT;
-    double t = 0;
 
-    public static double interactionDistance = 4;
-    public static double zombieVelocity = 0.3;
-    public static double persecutionZombieVelocity = 4;
+    public static double zombieColor = 1;
+    private double humanColor = 0.5;
+    private double wallColor = 0.75;
 
-    public static Map<Particle, Particle> persecutions = new HashMap<>();
+    public static int zombies = 1;
 
-    public SimulationController(int N, double velZ, double deltaT, FilePositionGenerator filePositionGenerator) {
-        this.N = N;
-        this.velZ = velZ;
-        this.deltaT = deltaT;
+    public static double RECOVERY_POSSIBILITY = 0.0;
+
+    public SimulationController(FilePositionGenerator filePositionGenerator) {
         this.filePositionGenerator = filePositionGenerator;
         generateMap();
-        simulate();
     }
 
     public void generateMap() {
         double randomX, randomY;
-
-        // agrega los humanos
         while (particles.size() < N) {
             double randomAngle = Math.random() * (360);
             double randomRadius = Math.random() * (circleRadius - 1) + 1;
             randomX = circleRadius + randomRadius * Math.cos(randomAngle);
             randomY = circleRadius + randomRadius * Math.sin(randomAngle);
             if (!particleOverlaps(randomX, randomY)) {
-                particles.add(new Particle(particles.size(), randomX, randomY, 0, 0.5, true, false));
+                particles.add(new Particle(particles.size(), randomX, randomY, vdMax, rMin, humanColor, true));
             }
         }
 
         // agrega al zombie
-        particles.add(new Particle(particles.size(), circleRadius, circleRadius, zombieVelocity, 1, false, false));
+        particles.add(new Particle(particles.size(), circleRadius, circleRadius, vzMin, rMin, zombieColor, false));
 
         // agrega las paredes
         for (double j = 0; j < 360.0; j += 0.1) {
-            particles.add(new Particle(circleRadius + circleRadius * Math.cos(j), circleRadius + circleRadius * Math.sin(j), 0, 0.75, true, true));
+            walls.add(new Wall(circleRadius + circleRadius * Math.cos(j), circleRadius + circleRadius * Math.sin(j), wallColor, rMin));
         }
+        filePositionGenerator.addWalls(particles);
         filePositionGenerator.addParticles(particles);
-    }
-
-    public void simulate() {
-        Particle closestParticle;
-        while (!cutCondition(countZombies)) {
-
-
-            for (Particle particle : particles) {
-                Pair<Double, Particle> closest = checkProximity(particle); //se fija si tiene a alguien cerca
-                particle.move(closest);
-            }
-
-            // maso como seria
-            // zombies recorren de manera random buscando humanos a velocidad baja (0.3m/s)
-            // si un zombie encuentra humanos, se dirige al mas cercano con velZ
-            // los humanos intentan escapar del zombie
-            // si aparece uno mas cercano, cambia a ese target
-            // se quedan pegados 7 segundos
-            // el humano se convierte en zombie
-
-            // humanos quieren escapar del zombie, esquivando paredes y humanos
-
-            // guarda posiciones de todas las particulas
-
-        }
-    }
-
-    // puede ser el que querramos.
-    // un tiempo/un porcentaje de zombies/etc
-    public boolean cutCondition(int countZombies) {
-        return true;
-        //return ((countZombies/N)>=0.75? true : false);
     }
 
     public boolean particleOverlaps(double x, double y) {
@@ -101,21 +76,15 @@ public class SimulationController {
         return false;
     }
 
-
-    private double calculateDistance(Particle p1, Particle p2) {
-        return Math.sqrt(Math.pow(p1.getXPos() - p2.getXPos(), 2) - Math.pow(p1.getYPos() - p2.getYPos(), 2));
+    public static double getRandom(double min, double max) {
+        return (Math.random() * (max - min + 1) + min);
     }
 
-    public Pair<Double, Particle> checkProximity(Particle particle) {
-        Particle closestParticle = particle.equals(particles.get(0)) ? particles.get(1) : particles.get(0);
-        double closestDistance = calculateDistance(particle, closestParticle);
-        for (Particle p : particles) {
-            double dist = calculateDistance(particle, p);
-            if ((!p.equals(particle)) && (dist < closestDistance) && !(p.isZombie() && particle.isZombie())) {
-                closestParticle = p;
-                closestDistance = dist;
-            }
-        }
-        return new Pair<>(closestDistance, closestParticle);
+    public void simulate() {
+        CPM.run(filePositionGenerator);
+    }
+
+    public static boolean cutCondition() {
+        return ((zombies / (N)) >= 1);
     }
 }
